@@ -82,7 +82,7 @@ class SparkServiceProvider extends ServiceProvider
                 'First', 'Second', 'Third'
             ])->attributes(["points" => 100]);
 
-        Spark::teamPlan('Basic Team', 'plan_DkxOJBoCeCm1qQaa')
+        Spark::teamPlan('Basic Team', 'plan_Dmnva2WkQH8d4V')
             ->price(50)
             ->features([
                 'First', 'Second', 'Third'

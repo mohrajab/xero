@@ -15,9 +15,11 @@ class ServiceController extends Controller
     public function index(Service $service)
     {
         Point::create([
+            "team_id" => request()->user()->currentTeam()->id ?? null,
             "user_id" => request()->user()->id,
             "points" => $service->points,
-            "subscription_id" => request()->user()->subscription()->id,
+            "subscription_team_id" => request()->user()->currentTeam() && request()->user()->currentTeam()->subscription()->id ? request()->user()->currentTeam()->subscription()->id : null,
+            "subscription_id" => request()->user()->currentTeam() ? null : request()->user()->subscription()->id,
             "service_id" => $service->id
         ]);
 

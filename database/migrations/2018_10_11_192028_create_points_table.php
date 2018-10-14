@@ -17,7 +17,8 @@ class CreatePointsTable extends Migration
             $table->unsignedInteger('team_id')->nullable()->index();
             $table->unsignedInteger('user_id')->index();
             $table->unsignedTinyInteger('points');
-            $table->unsignedInteger('subscription_id');
+            $table->unsignedInteger('subscription_id')->nullable();
+            $table->unsignedInteger('subscription_team_id')->nullable();
             $table->unsignedInteger('service_id');
             $table->timestamps();
         });
