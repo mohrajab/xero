@@ -15,7 +15,6 @@ class VerifyUserIsSubscribed
      */
     public function handle($request, $next, $subscription = 'default', $plan = null)
     {
-        dd($plan);
         if ($this->subscribed($request->user(), $subscription, $plan, func_num_args() === 2)) {
             return $next($request);
         }

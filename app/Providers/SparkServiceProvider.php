@@ -55,7 +55,6 @@ class SparkServiceProvider extends ServiceProvider
         Spark::useStripe()->noCardUpFront()->teamTrialDays(7);
         Spark::useStripe()->noCardUpFront()->trialDays(7);
 
-
         Spark::checkPlanEligibilityUsing(function ($user, $plan) {
             return true;
             if ($plan->__get("points") > 1) {
@@ -93,6 +92,6 @@ class SparkServiceProvider extends ServiceProvider
             ->price(100)
             ->features([
                 'First', 'Second', 'Third'
-            ])->attributes(["points" => 400]);
+            ])->attributes(["points" => 10]);
     }
 }

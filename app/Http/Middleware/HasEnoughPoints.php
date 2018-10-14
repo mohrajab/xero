@@ -2,15 +2,15 @@
 
 namespace App\Http\Middleware;
 
-use Laravel\Spark\Plan;
-
 class HasEnoughPoints
 {
-    public function handle($request, $next, $subscription = 'default', Plan $plan = null)
+    public function handle($request, $next)
     {
-        $currentPoints = $request->user->points()->where('subscription_id', $subscription->id)->count();
+        $plan = ($request->user()->sparkPlan(($request->user()->subscription()->name)));
+        $currentPoints = $request->user()->points()->where('subscription_id', $request->user()->subscription()->id)->sum('points');
         $planPoints = $plan->__get("points");
         $servicePoints = $request->service->points;
+
         if ($currentPoints + $servicePoints <= $planPoints) {
             return $next($request);
         }

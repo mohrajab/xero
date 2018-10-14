@@ -15,4 +15,4 @@ Route::get('/', 'WelcomeController@show');
 
 Route::get('/home', 'HomeController@show');
 
-Route::get('getService/{service}', 'ServiceController@index')->middleware('subscribed:default,'.new \App\Point());
+Route::get('getService/{service}', 'ServiceController@index')->middleware('subscribed', 'hasEnoughPoints');
