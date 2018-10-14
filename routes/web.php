@@ -22,8 +22,9 @@ Route::get('callback', function () {
 });
 
 
-Route::get('access1', 'AuthController2@access');
-Route::get('test1', 'AuthController2@test');
+Route::get('access1', 'XeroTestController@access');
+Route::get('authorize', 'XeroTestController@test');
+Route::get('invoice', 'XeroTestController@invoice');
 
 Route::get('access', 'AuthController@access');
 Route::get('test/{invoice_id?}', 'AuthController@test');

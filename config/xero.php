@@ -15,7 +15,7 @@ return [
         | Provide a callback URL, or use 'oob' if one isn't required.
         |
         */
-        'callback' => env('XERO_CALLBACK', 'http://localhost/xero/public/test'),
+        'callback' => env('XERO_CALLBACK'/*, 'http://localhost/xero/public/authorize'*/),
 
         /*
         |--------------------------------------------------------------------------
