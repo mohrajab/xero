@@ -5,6 +5,20 @@ namespace App;
 use Laravel\Spark\CanJoinTeams;
 use Laravel\Spark\User as SparkUser;
 
+/**
+ * App\User
+ *
+ * @property-read \Illuminate\Database\Eloquent\Model|null $current_team
+ * @property-read string|null $photo_url
+ * @property-read \Illuminate\Database\Eloquent\Collection|\Laravel\Spark\Invitation[] $invitations
+ * @property-read \Illuminate\Database\Eloquent\Collection|\Laravel\Spark\LocalInvoice[] $localInvoices
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Team[] $ownedTeams
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Point[] $points
+ * @property-read \Illuminate\Database\Eloquent\Collection|\Laravel\Spark\Subscription[] $subscriptions
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Team[] $teams
+ * @property-read \Illuminate\Database\Eloquent\Collection|\Laravel\Spark\Token[] $tokens
+ * @mixin \Eloquent
+ */
 class User extends SparkUser
 {
     use CanJoinTeams;
