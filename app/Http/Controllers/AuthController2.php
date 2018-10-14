@@ -19,6 +19,7 @@ class AuthController2 extends Controller
 
     public function access()
     {
+        ini_set('memory_limit', '-1');
         //if no session or if it is expired
         $oauth_session = $this->getOAuthSession();
 
