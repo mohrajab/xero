@@ -13,9 +13,14 @@
         "laravel/framework": "5.7.*",
         "laravel/tinker": "^1.0",
         "laravel/cashier": "~7.0",
-        "laravel/spark-aurelius": "*@dev"
+        "laravel/spark-aurelius": "*@dev",
+        "phpoffice/phpword": "^0.15.0",
+        "pulkitjalan/xero-laravel": "dev-master",
+        "calcinai/xero-php": "^1.8",
+        "doctrine/dbal": "^2.8"
     },
     "require-dev": {
+        "barryvdh/laravel-ide-helper": "^2.5",
         "beyondcode/laravel-dump-server": "^1.0",
         "filp/whoops": "^2.0",
         "fzaninotto/faker": "^1.4",
@@ -52,6 +57,12 @@
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"
+        ],
+        "post-update-cmd": [
+            "Illuminate\\Foundation\\ComposerScripts::postUpdate",
+            "php artisan ide-helper:generate",
+            "php artisan ide-helper:models --write",
+            "php artisan ide-helper:meta"
         ]
     },
     "config": {
