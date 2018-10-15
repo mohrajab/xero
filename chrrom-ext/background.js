@@ -15,13 +15,26 @@ chrome.runtime.onInstalled.addListener(function () {
 
 
 chrome.pageAction.onClicked.addListener(function (tab) {
-    chrome.identity.launchWebAuthFlow(
-        {'url': 'http://127.0.0.1:8000/login', 'interactive': true},
-        function (redirect_url) { /* Extract token from redirect_url */
-        });
-    /*    var url = new URL(tab.url);
-        var id = url.searchParams.get("InvoiceID");
-        var newURL = "http://localhost/xero/public/test/" + id;
+    /*    chrome.identity.getAuthToken({interactive: false}, function (token) {
+            if (!token) {
+                if (chrome.runtime.lastError.message.match(/not signed in/)) {
+                    alert("not singed in");
+                } else {
+                    alert("singed in");
+                    chrome.identity.getProfileUserInfo(function (user) {
+                        alert(user.email);
+                    });
+                }
+            }
+        });*/
+    /* chrome.identity.launchWebAuthFlow(
+         {'url': 'https://go.xero.com/Dashboard/', 'interactive': true},
+         function (redirect_url) { /!* Extract token from redirect_url *!/
+             alert(redirect_url);
+         });*/
+    var url = new URL(tab.url);
+    var id = url.searchParams.get("InvoiceID");
+    var newURL = "http://localhost:8000/test/" + id;
 
-        chrome.tabs.create({url: newURL});*/
+    chrome.tabs.create({url: newURL});
 });
