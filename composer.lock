@@ -1,7 +1,7 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
     "content-hash": "2496c093c800f2a9316653ade57d330d",
@@ -1290,7 +1290,7 @@
             "dist": {
                 "type": "path",
                 "url": "./spark",
-                "reference": "368de5bd46dd8c049158a9c7a3a2aa1e853602c7",
+                "reference": "89e7593c3919595b3146f4b2f5e45f6036926ee4",
                 "shasum": null
             },
             "require": {
