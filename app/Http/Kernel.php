@@ -2,7 +2,7 @@
 
 namespace App\Http;
 
-use App\Http\Middleware\HasEnoughPoints;
+use App\Http\Middleware\Points;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 use Illuminate\Routing\Router;
@@ -73,6 +73,6 @@ class Kernel extends HttpKernel
         'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
         'subscribed' => \Laravel\Spark\Http\Middleware\VerifyUserIsSubscribed::class,
         'teamSubscribed' => \Laravel\Spark\Http\Middleware\VerifyTeamIsSubscribed::class,
-        'hasEnoughPoints' => HasEnoughPoints::class,
+        'points' => Points::class,
     ];
 }

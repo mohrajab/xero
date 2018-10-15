@@ -15,7 +15,7 @@ Route::get('/', 'WelcomeController@show');
 
 Route::get('/home', 'HomeController@show');
 
-Route::get('getService/{service}', 'ServiceController@index')->middleware('subscribed', 'hasEnoughPoints');
+Route::get('downloadArabicPDF', 'ServiceController@index')->middleware('subscribed', 'points');
 
 Route::get('callback', function () {
     dd("Xxx");
