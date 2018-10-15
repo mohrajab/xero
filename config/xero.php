@@ -28,10 +28,10 @@ return [
         | application type (private, public or partner).
         |
         */
-        'consumer_key' => env('XERO_CUSTOMER_KEY', 'V9H6QKGF5PJTPRBMCZPU0DCHAZOFTM'),
-        'consumer_secret' => env('XERO_CUSTOMER_SECRET', 'C4FKVTE3P42T0YIU4BUJ1CALQJKMJV'),
-        //'consumer_key' => env('XERO_CUSTOMER_KEY', '86MFWHITWFCDSNEJD04NQCFZRWRDJD'),
-        //'consumer_secret' => env('XERO_CUSTOMER_SECRET', 'RJDHY5AMPICDUISIPGBJOQDYULWOK9'),
+        //'consumer_key' => env('XERO_CUSTOMER_KEY', 'V9H6QKGF5PJTPRBMCZPU0DCHAZOFTM'),
+        //'consumer_secret' => env('XERO_CUSTOMER_SECRET', 'C4FKVTE3P42T0YIU4BUJ1CALQJKMJV'),
+        'consumer_key' => env('XERO_CUSTOMER_KEY', '86MFWHITWFCDSNEJD04NQCFZRWRDJD'),
+        'consumer_secret' => env('XERO_CUSTOMER_SECRET', 'RJDHY5AMPICDUISIPGBJOQDYULWOK9'),
 
         /*
         |--------------------------------------------------------------------------

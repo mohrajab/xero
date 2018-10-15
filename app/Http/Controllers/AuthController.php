@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UploadTemplateRequest;
+use App\Point;
+use App\Service;
 use App\TemplateProcessor;
 use Illuminate\Support\Facades\Session;
 use XeroPHP\Application\PrivateApplication;
@@ -21,8 +23,19 @@ class AuthController extends Controller
     }
 
 
-    public function test($invoice_id=null)
+    public function test($invoice_id = null)
     {
+        $service = Service::first();
+
+        Point::create([
+            "team_id" => request()->user()->currentTeam()->id ?? null,
+            "user_id" => request()->user()->id,
+            "points" => $service->points,
+            "subscription_team_id" => request()->user()->currentTeam() && request()->user()->currentTeam()->subscription()->id ? request()->user()->currentTeam()->subscription()->id : null,
+            "subscription_id" => request()->user()->currentTeam() ? null : request()->user()->subscription()->id,
+            "service_id" => $service->id
+        ]);
+
         /**@var Invoice $invoice */
         $invoice = $this->xero->loadByGUID(Invoice::class, $invoice_id ?? '37483409-699f-4cfa-83f0-773c5d62e79f');
         /**@var Contact $contact */

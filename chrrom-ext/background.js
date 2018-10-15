@@ -4,7 +4,7 @@ chrome.runtime.onInstalled.addListener(function () {
             {
                 conditions: [
                     new chrome.declarativeContent.PageStateMatcher({
-                        pageUrl: {urlContains: 'InvoiceID'},
+                        pageUrl: {urlContains: 'xero'},
                     })
                 ],
                 actions: [new chrome.declarativeContent.ShowPageAction()]
@@ -15,9 +15,13 @@ chrome.runtime.onInstalled.addListener(function () {
 
 
 chrome.pageAction.onClicked.addListener(function (tab) {
-    var url = new URL(tab.url);
-    var id = url.searchParams.get("InvoiceID");
-    var newURL = "http://localhost/xero/public/test/" + id;
+    chrome.identity.launchWebAuthFlow(
+        {'url': 'http://127.0.0.1:8000/login', 'interactive': true},
+        function (redirect_url) { /* Extract token from redirect_url */
+        });
+    /*    var url = new URL(tab.url);
+        var id = url.searchParams.get("InvoiceID");
+        var newURL = "http://localhost/xero/public/test/" + id;
 
-    chrome.tabs.create({url: newURL});
+        chrome.tabs.create({url: newURL});*/
 });

@@ -1,35 +1,36 @@
 {
-  "name": "Detect Xero to generate new invoice",
-  "version": "1.0",
-  "description": "show button to redirect to invoice generator website if xero.com is running.",
-  "background": {
-    "scripts": [
-      "background.js"
+    "name": "Detect Xero to generate new invoice",
+    "version": "1.0",
+    "description": "show button to redirect to invoice generator website if xero.com is running.",
+    "background": {
+        "scripts": [
+            "background.js"
+        ],
+        "persistent": false
+    },
+    "page_action": {
+        "default_icon": "icon-19.png",
+        "default_title": "navigate to invoice generator"
+    },
+    "permissions": [
+        "declarativeContent",
+        "tabs",
+        "activeTab",
+        "identity"
     ],
-    "persistent": false
-  },
-  "page_action": {
-    "default_icon": "icon-19.png",
-    "default_title": "navigate to invoice generator"
-  },
-  "permissions": [
-    "declarativeContent",
-    "tabs",
-    "activeTab"
-  ],
-  "icons": {
-    "48": "icon-48.png"
-  },
-  "manifest_version": 2,
-  "content_scripts": [
-    {
-      "matches": [
-        "http://go.xero.com/AccountsReceivable/Edit.aspx?InvoiceID=*",
-        "https://go.xero.com/AccountsReceivable/Edit.aspx?InvoiceID=*"
-      ],
-      "js": [
-        "contentScript.js"
-      ]
-    }
-  ]
+    "icons": {
+        "48": "icon-48.png"
+    },
+    "manifest_version": 2,
+    "content_scripts": [
+        {
+            "matches": [
+                "http://go.xero.com/AccountsReceivable/Edit.aspx?InvoiceID=*",
+                "https://go.xero.com/AccountsReceivable/Edit.aspx?InvoiceID=*"
+            ],
+            "js": [
+                "contentScript.js"
+            ]
+        }
+    ]
 }
