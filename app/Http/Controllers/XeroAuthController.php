@@ -19,10 +19,9 @@ class XeroAuthController extends Controller
         $this->xero = new PublicApplication(config('xero'));
     }
 
-    public function authorize()
+    public function login()
     {
 //        Session::remove('oauth');
-
         // if no session or if it is expired
         if (!$this->getOAuthSession()) {
             Config::set('xero.oauth.callback', \Illuminate\Support\Facades\Request::fullUrl());
@@ -62,7 +61,11 @@ class XeroAuthController extends Controller
                     ->setTokenSecret(Session::get('oauth.token_secret'));
             }
         }
-        return \redirect()->intended();
+
+        if ($go_to = Session::pull('back_to'))
+            return \redirect($go_to);
+        else
+            return \redirect('home');
         //Otherwise, you're in.
     }
 

@@ -18,5 +18,5 @@ Route::get('/home', 'HomeController@show');
 Route::get('downloadArabicPDF', 'ServiceController@index')->middleware('subscribed', 'points');
 
 
-Route::get('authorize', 'XeroAuthController@authorize')->middleware(['auth']);
+Route::get('authorize', 'XeroAuthController@login')->middleware(['auth']);
 Route::get('invoice/{invoice_id}', 'InvoiceController@generate')->middleware(['auth', 'points']);

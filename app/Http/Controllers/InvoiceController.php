@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\UploadTemplateRequest;
 use App\TemplateProcessor;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Storage;
 use XeroPHP\Application\PublicApplication;
 use XeroPHP\Models\Accounting\Address;
 use XeroPHP\Models\Accounting\Contact;
@@ -22,8 +24,11 @@ class InvoiceController extends Controller
 
     public function generate($invoice_id)
     {
-        if (!$this->getOAuthSession())
+        if (!$this->getOAuthSession()) {
+            Session::put('back_to', request()->fullUrl());
+            Session::save();
             return redirect('authorize');
+        }
 
         $this->xero->getOAuthClient()
             ->setToken(Session::get('oauth.token'))
@@ -81,7 +86,11 @@ class InvoiceController extends Controller
         $values = array_merge(array_merge(array_values($mapInvoice), array_values($mapContact)), array_values($companyMap));
 
         //        dd($keys, $values);
-        $templateProcessor = new TemplateProcessor(public_path('test.docx'));
+        $file=public_path('test.docx');
+        if(isset(Auth::user()->file) && Auth::user()->file)
+            $file=Storage::url(Auth::user()->file);
+
+        $templateProcessor = new TemplateProcessor($file);
         $templateProcessor->setValue($keys, $values);
         /*$templateProcessor->setImg('Insert logo here', array('src' =>
             public_path('40285063_1390586571074149_5104049348275077120_n.jpg'), 'swh' => '50'));*/
@@ -100,10 +109,10 @@ class InvoiceController extends Controller
             $templateProcessor->setValue("TableEnd:LineItem#{$key}", '');
         }
 
-        $filename = str_random(15) . '.docx';
+        $filename = str_random(20) . '.docx';
         $templateProcessor->saveAs(storage_path('app/public/files/' . $filename));
 
-        return \Storage::download('files/' . $filename);
+        return \Storage::download("files/{$filename}");
     }
 
     public function upload(UploadTemplateRequest $request)

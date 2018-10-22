@@ -18,7 +18,9 @@ class Controller extends BaseController
     protected function getOAuthSession()
     {
         //If it doesn't exist or is expired, return null
-        if (!empty(Session::get('oauth')) || Session::get('oauth.expires') !== null && Session::get('oauth.expires') <= time()) {
+        if (!Session::has('oauth') || (Session::get('oauth.expires') && Session::get('oauth.expires') <= time())) {
+            Session::remove('oauth');
+            Session::save();
             return null;
         }
 
