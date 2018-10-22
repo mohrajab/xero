@@ -17,12 +17,10 @@ class AuthController extends Controller
 {
     protected $xero;
 
-
     public function __construct(PublicApplication $xero)
     {
         $this->xero = $xero;
     }
-
 
     public function test($invoice_id = null)
     {
@@ -103,7 +101,7 @@ class AuthController extends Controller
             $templateProcessor->setValue("TableEnd:LineItem#{$key}", '');
         }
 
-        $templateProcessor->saveAs(storage_path('app/files/test1.docx'));
+        $templateProcessor->saveAs(storage_path('app/public/files/test1.docx'));
 
         return \Storage::download('files/test1.docx');
     }
