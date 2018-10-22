@@ -7,7 +7,7 @@ use App\Point;
 use App\Service;
 use App\TemplateProcessor;
 use Illuminate\Support\Facades\Session;
-use XeroPHP\Application\PrivateApplication;
+use XeroPHP\Application\PublicApplication;
 use XeroPHP\Models\Accounting\Address;
 use XeroPHP\Models\Accounting\Contact;
 use XeroPHP\Models\Accounting\Invoice;
@@ -17,7 +17,7 @@ class AuthController extends Controller
 {
     protected $xero;
 
-    public function __construct(PrivateApplication $xero)
+    public function __construct(PublicApplication $xero)
     {
         $this->xero = $xero;
     }
