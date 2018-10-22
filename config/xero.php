@@ -15,7 +15,7 @@ return [
         | Provide a callback URL, or use 'oob' if one isn't required.
         |
         */
-        'callback' => env('XERO_CALLBACK'/*, 'http://localhost/xero/public/authorize'*/),
+        'callback' => env('XERO_CALLBACK', 'http://localhost/xero/public/authorize'),
 
         /*
         |--------------------------------------------------------------------------
@@ -30,8 +30,8 @@ return [
         */
         //'consumer_key' => env('XERO_CUSTOMER_KEY', 'V9H6QKGF5PJTPRBMCZPU0DCHAZOFTM'),
         //'consumer_secret' => env('XERO_CUSTOMER_SECRET', 'C4FKVTE3P42T0YIU4BUJ1CALQJKMJV'),
-        'consumer_key' => env('XERO_CUSTOMER_KEY', '86MFWHITWFCDSNEJD04NQCFZRWRDJD'),
-        'consumer_secret' => env('XERO_CUSTOMER_SECRET', 'RJDHY5AMPICDUISIPGBJOQDYULWOK9'),
+        'consumer_key' => env('XERO_CUSTOMER_KEY', 'UO1ZZEDBZGNTCFNKR14BLR2QC47BJC'),
+        'consumer_secret' => env('XERO_CUSTOMER_SECRET', 'PUJFS7OE299GKZBDY3EYLOTUN7JXIS'),
 
         /*
         |--------------------------------------------------------------------------

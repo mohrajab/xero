@@ -13,7 +13,7 @@ use XeroPHP\Models\Accounting\Contact;
 use XeroPHP\Models\Accounting\Invoice;
 use XeroPHP\Models\Accounting\Organisation;
 
-class AuthController extends Controller
+class InvoiceController extends Controller
 {
     protected $xero;
 
@@ -22,10 +22,9 @@ class AuthController extends Controller
         $this->xero = $xero;
     }
 
-
-    public function test($invoice_id = null)
+    public function test($invoice_id)
     {
-        $service = Service::first();
+        $service = Service::where("id", 1)->first();
 
         Point::create([
             "team_id" => request()->user()->currentTeam()->id ?? null,
@@ -36,8 +35,10 @@ class AuthController extends Controller
             "service_id" => $service->id
         ]);
 
-        /**@var Invoice $invoice */
-        $invoice = $this->xero->loadByGUID(Invoice::class, $invoice_id ?? '37483409-699f-4cfa-83f0-773c5d62e79f');
+        /**@var Invoice $invoice */ //'37483409-699f-4cfa-83f0-773c5d62e79f'
+        $invoice = $this->xero->loadByGUID(Invoice::class, $invoice_id);
+        if (!$invoice)
+            abort(404);
         /**@var Contact $contact */
         $contact = $this->xero->loadByGUID(Contact::class, $invoice->Contact->ContactID);
         /**@var Organisation $company */
@@ -52,7 +53,6 @@ class AuthController extends Controller
             'ContactTaxDisplayName' => '---',
             'ContactTaxNumber' => $contact->getTaxNumber(),
             'ContactAccountNumber' => $contact->getAccountNumber(),
-
         ];
 
         $mapInvoice = [
@@ -86,9 +86,6 @@ class AuthController extends Controller
         $keys = array_merge(array_merge(array_keys($mapInvoice), array_keys($mapContact)), array_keys($companyMap));
         $values = array_merge(array_merge(array_values($mapInvoice), array_values($mapContact)), array_values($companyMap));
 
-        if (file_exists(public_path('test1.docx')))
-            unlink(public_path('test1.docx'));
-
         //        dd($keys, $values);
         $templateProcessor = new TemplateProcessor(public_path('test.docx'));
         $templateProcessor->setValue($keys, $values);
@@ -109,9 +106,11 @@ class AuthController extends Controller
             $templateProcessor->setValue("TableEnd:LineItem#{$key}", '');
         }
 
-        $templateProcessor->saveAs(storage_path('app/files/test1.docx'));
+        $filename = str_random(15) . '.docx';
 
-        return \Storage::download('files/test1.docx');
+        $templateProcessor->saveAs(storage_path('app/files/' . $filename));
+
+        return \Storage::download('files/' . $filename);
     }
 
     public function upload(UploadTemplateRequest $request)
