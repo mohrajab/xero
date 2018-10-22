@@ -24,12 +24,15 @@ class Points
 
             if ($currentPoints + $servicePoints <= $planPoints) {
                 $result = $next($request);
-                $this->deductPoints(
-                    $request->user()->id,
-                    $service,
-                    request()->user()->currentTeam()->id,
-                    request()->user()->currentTeam()->subscription()->id
-                );
+
+                if ($result->getStatusCode() == 200) {
+                    $this->deductPoints(
+                        $request->user()->id,
+                        $service,
+                        request()->user()->currentTeam()->id,
+                        request()->user()->currentTeam()->subscription()->id
+                    );
+                }
                 return $result;
             }
         }
@@ -42,13 +45,15 @@ class Points
 
             if ($currentPoints + $servicePoints <= $planPoints) {
                 $result = $next($request);
-                $this->deductPoints(
-                    $request->user()->id,
-                    $service,
-                    null,
-                    null,
-                    request()->user()->subscription()->id
-                );
+                if ($result->getStatusCode() == 200) {
+                    $this->deductPoints(
+                        $request->user()->id,
+                        $service,
+                        null,
+                        null,
+                        request()->user()->subscription()->id
+                    );
+                }
                 return $result;
             }
         }

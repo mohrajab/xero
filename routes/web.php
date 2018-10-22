@@ -23,4 +23,4 @@ Route::get('authorize', 'XeroTestController@test');
 Route::get('invoice', 'XeroTestController@invoice');
 
 Route::get('access', 'AuthController@access');
-Route::get('test/{invoice_id?}', 'AuthController@test')->middleware('points');
+Route::get('test/{invoice_id?}', 'AuthController@test')->middleware(['auth','points']);
