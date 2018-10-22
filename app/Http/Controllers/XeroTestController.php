@@ -26,7 +26,6 @@ class XeroTestController extends Controller
 
         // if no session or if it is expired
         if (!Session::has('oauth') || !Session::get('oauth')) {
-            var_dump('qwe');
             Config::set('xero.oauth.callback', \Illuminate\Support\Facades\Request::fullUrl());
             $this->xero = new PublicApplication(config('xero'));
 
@@ -43,7 +42,6 @@ class XeroTestController extends Controller
 
             return Redirect::to($this->xero->getAuthorizeURL($oauth_response['oauth_token']));
         } else {
-            var_dump('qwe1');
             $this->xero->getOAuthClient()
                 ->setToken(Session::get('oauth.token'))
                 ->setTokenSecret(Session::get('oauth.token_secret'));
@@ -65,7 +63,6 @@ class XeroTestController extends Controller
                     ->setTokenSecret(Session::get('oauth.token_secret'));
             }
         }
-        var_dump('qwe2');
         //Otherwise, you're in.
     }
 
