@@ -22,9 +22,8 @@ class XeroTestController extends Controller
 
     public function test()
     {
-        //Session::remove('oauth');
+        Session::remove('oauth');
 
-        dd(Session::get('oauth'));
         // if no session or if it is expired
         if (!Session::has('oauth') || !Session::get('oauth')) {
             var_dump('qwe');
