@@ -17,6 +17,7 @@ class AuthController extends Controller
 {
     protected $xero;
 
+
     public function __construct(PublicApplication $xero)
     {
         $this->xero = $xero;
