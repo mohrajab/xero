@@ -6,11 +6,10 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Session;
 use XeroPHP\Application\PublicApplication;
-use XeroPHP\Models\Accounting\Invoice;
 use XeroPHP\Remote\Request;
 use XeroPHP\Remote\URL;
 
-class XeroTestController extends Controller
+class XeroAuthController extends Controller
 {
 
     private $xero;
@@ -20,12 +19,12 @@ class XeroTestController extends Controller
         $this->xero = new PublicApplication(config('xero'));
     }
 
-    public function test()
+    public function authorize()
     {
 //        Session::remove('oauth');
 
         // if no session or if it is expired
-        if (!Session::has('oauth') || !Session::get('oauth')) {
+        if (!$this->getOAuthSession()) {
             Config::set('xero.oauth.callback', \Illuminate\Support\Facades\Request::fullUrl());
             $this->xero = new PublicApplication(config('xero'));
 
@@ -63,15 +62,8 @@ class XeroTestController extends Controller
                     ->setTokenSecret(Session::get('oauth.token_secret'));
             }
         }
+        return \redirect()->intended();
         //Otherwise, you're in.
-    }
-
-    public function invoice()
-    {
-        if ($val = $this->test())
-            return $val;
-
-        dd($this->xero->load(Invoice::class)->execute());
     }
 
     /**
@@ -79,7 +71,7 @@ class XeroTestController extends Controller
      * @param $secret
      * @param $expires
      */
-    public function setOAuthSession($token, $secret, $expires = null)
+    private function setOAuthSession($token, $secret, $expires = null)
     {
         // expires sends back an int
         if ($expires !== null) {
@@ -93,19 +85,5 @@ class XeroTestController extends Controller
         ]);
 
         Session::save();
-
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getOAuthSession()
-    {
-        //If it doesn't exist or is expired, return null
-        if (!empty(Session::get('oauth')) || Session::get('oauth.expires') !== null && Session::get('oauth.expires') <= time()) {
-            return null;
-        }
-
-        return Session::get('oauth');
     }
 }

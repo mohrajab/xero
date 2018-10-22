@@ -52,6 +52,7 @@ class SparkServiceProvider extends ServiceProvider
      */
     public function booted()
     {
+
         Spark::useStripe()->noCardUpFront()->teamTrialDays(7);
         Spark::useStripe()->noCardUpFront()->trialDays(7);
 

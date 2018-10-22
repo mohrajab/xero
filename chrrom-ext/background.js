@@ -34,7 +34,7 @@ chrome.pageAction.onClicked.addListener(function (tab) {
          });*/
     var url = new URL(tab.url);
     var id = url.searchParams.get("InvoiceID");
-    var newURL = "http://localhost:8000/test/" + id;
+    var newURL = "http://localhost:8000/invoice/" + id;
 
     chrome.tabs.create({url: newURL});
 });
