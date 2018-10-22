@@ -17,18 +17,17 @@ class AuthController extends Controller
 {
     protected $xero;
 
-
     public function __construct(PublicApplication $xero)
     {
         $this->xero = $xero;
-        $this->xero->getOAuthClient()
-            ->setToken(Session::get('oauth.token'))
-            ->setTokenSecret(Session::get('oauth.token_secret'));
     }
-
 
     public function test($invoice_id = null)
     {
+        $this->xero->getOAuthClient()
+            ->setToken(Session::get('oauth.token'))
+            ->setTokenSecret(Session::get('oauth.token_secret'));
+
         /**@var Invoice $invoice */
         $invoice = $this->xero->loadByGUID(Invoice::class, $invoice_id ?? '37483409-699f-4cfa-83f0-773c5d62e79f');
         /**@var Contact $contact */
@@ -102,7 +101,7 @@ class AuthController extends Controller
             $templateProcessor->setValue("TableEnd:LineItem#{$key}", '');
         }
 
-        $templateProcessor->saveAs(storage_path('app/files/test1.docx'));
+        $templateProcessor->saveAs(storage_path('app/public/files/test1.docx'));
 
         return \Storage::download('files/test1.docx');
     }
