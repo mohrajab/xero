@@ -21,16 +21,15 @@ class AuthController extends Controller
     public function __construct(PublicApplication $xero)
     {
         $this->xero = $xero;
-        $this->xero->getOAuthClient()
-            ->setToken(Session::get('oauth.token'))
-            ->setTokenSecret(Session::get('oauth.token_secret'));
-
-        dd(Session::get('oauth'));
     }
 
 
     public function test($invoice_id = null)
     {
+        $this->xero->getOAuthClient()
+            ->setToken(Session::get('oauth.token'))
+            ->setTokenSecret(Session::get('oauth.token_secret'));
+
         $service = Service::first();
 
         Point::create([
