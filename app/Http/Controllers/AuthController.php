@@ -24,6 +24,8 @@ class AuthController extends Controller
         $this->xero->getOAuthClient()
             ->setToken(Session::get('oauth.token'))
             ->setTokenSecret(Session::get('oauth.token_secret'));
+
+        dd(Session::get('oauth'));
     }
 
 
