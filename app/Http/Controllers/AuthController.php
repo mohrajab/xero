@@ -26,6 +26,7 @@ class AuthController extends Controller
 
     public function test($invoice_id = null)
     {
+        dd('qwe');
         $service = Service::first();
 
         Point::create([
