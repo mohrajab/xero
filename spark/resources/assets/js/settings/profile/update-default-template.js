@@ -61,8 +61,8 @@ module.exports = {
         /**
          * Calculate the style attribute for the photo preview.
          */
-        previewStyle() {
-            return `background-image: url(${this.user.photo_url})`;
+        fetchLink() {
+            return `${this.user.default_template}`;
         }
     }
 };

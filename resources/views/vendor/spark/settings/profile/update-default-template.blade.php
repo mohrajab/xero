@@ -14,9 +14,9 @@
             <form role="form">
                 <div class="form-group row justify-content-center">
                     <div class="col-md-6 d-flex align-items-center">
-                        <div class="image-placeholder mr-4">
-                            <span class="profile-photo-preview2"></span>
-                        </div>
+                        <a v-if="user.default_template" class="btn btn-primary mr-4" :href="fetchLink">
+                            {{ __('Download Template') }}
+                        </a>
                         <div class="spark-uploader mr-4">
                             <input ref="default_template" type="file" class="spark-uploader-control" name="default_template" @change="update" :disabled="form.busy">
                             <div class="btn btn-outline-dark">{{__('Upload Template')}}</div>
