@@ -2,8 +2,6 @@
 
 namespace App\Providers;
 
-use App\Team;
-use App\User;
 use Laravel\Spark\Spark;
 use Laravel\Spark\Providers\AppServiceProvider as ServiceProvider;
 
@@ -35,7 +33,8 @@ class SparkServiceProvider extends ServiceProvider
      * @var array
      */
     protected $developers = [
-        'mohammed.r.rajab@gmail.com'
+        'mohammed.r.rajab@gmail.com',
+        'devmsh87@gmail.com'
     ];
 
     /**
@@ -52,8 +51,8 @@ class SparkServiceProvider extends ServiceProvider
      */
     public function booted()
     {
-        Spark::useStripe()->noCardUpFront()->teamTrialDays(7);
-        Spark::useStripe()->noCardUpFront()->trialDays(7);
+        Spark::useStripe()->noCardUpFront()->teamTrialDays(2);
+        Spark::useStripe()->noCardUpFront()->trialDays(3);
 
         Spark::checkPlanEligibilityUsing(function ($user, $plan) {
             return true;
@@ -64,34 +63,22 @@ class SparkServiceProvider extends ServiceProvider
             return true;
         });
 
-        /*Spark::chargePerSeat('Points', function (User $user) {
-            if ($user->subscription()->valid())
-                return $user->points()->where('subscription_id', $user->subscription()->id)->count();
-            return 0;
-        });
-
-        Spark::chargesTeamsPerSeat('Points', function (Team $team) {
-            if ($team->subscription()->valid())
-                return $team->points()->where('subscription_id', $team->subscription()->id)->count();
-            return 0;
-        });*/
-
         Spark::plan('Basic', 'plan_DjfmlqQ1K5uGAi')
             ->price(50)
             ->features([
-                'First', 'Second', 'Third'
+                '100 point', 'Arabic PDF', 'One month validity'
             ])->attributes(["points" => 100]);
 
         Spark::teamPlan('Basic Team', 'plan_Dmnva2WkQH8d4V')
             ->price(50)
             ->features([
-                'First', 'Second', 'Third'
+                '200 point', 'Arabic PDF', 'One month validity', 'Team usage'
             ])->attributes(["points" => 200]);
 
         Spark::plan('Pro', 'plan_DlhQTSTTgUxlLN')
             ->price(100)
             ->features([
-                'First', 'Second', 'Third'
-            ])->attributes(["points" => 10]);
+                '300 point', 'Arabic PDF', 'One month validity'
+            ])->attributes(["points" => 300]);
     }
 }
