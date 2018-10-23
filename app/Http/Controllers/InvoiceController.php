@@ -110,7 +110,7 @@ class InvoiceController extends Controller
         }
 
         $filename = "files/" . str_random(20) . '.docx';
-        $templateProcessor->saveAs(Storage::url($filename));
+        $templateProcessor->saveAs(Storage::path($filename));
 
         return \Storage::download($filename);
     }
