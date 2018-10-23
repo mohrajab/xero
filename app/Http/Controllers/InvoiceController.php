@@ -86,9 +86,9 @@ class InvoiceController extends Controller
         $values = array_merge(array_merge(array_values($mapInvoice), array_values($mapContact)), array_values($companyMap));
 
         //        dd($keys, $values);
-        $file=public_path('test.docx');
-        if(Auth::user()->default_template)
-            $file=Auth::user()->default_template;
+        $file = public_path('test.docx');
+        if (Auth::user()->default_template)
+            $file = Auth::user()->default_template;
 
         $templateProcessor = new TemplateProcessor($file);
         $templateProcessor->setValue($keys, $values);
@@ -109,10 +109,10 @@ class InvoiceController extends Controller
             $templateProcessor->setValue("TableEnd:LineItem#{$key}", '');
         }
 
-        $filename = str_random(20) . '.docx';
-        $templateProcessor->saveAs(storage_path('app/public/files/' . $filename));
+        $filename = "files/" . str_random(20) . '.docx';
+        $templateProcessor->saveAs(Storage::url($filename));
 
-        return \Storage::download("files/{$filename}");
+        return \Storage::download($filename);
     }
 
     public function upload(UploadTemplateRequest $request)
