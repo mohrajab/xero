@@ -1,6 +1,6 @@
 <spark-update-default-template :user="user" inline-template>
     <div class="card card-default" v-if="user">
-        <div class="card-header">{{__('Default Invoice Template')}}</div>
+        <div class="card-header">{{__('Custom Invoice Template')}}</div>
 
         <div class="card-body">
             <div class="alert alert-danger" v-if="form.errors.has('default_template')">
@@ -13,9 +13,14 @@
 
             <form role="form">
                 <div class="form-group row justify-content-center">
+                    <div class="col-md-2 d-flex align-items-start">
+                        <a class="btn btn-primary mr-4" href="{{ url("test.docx") }}">
+                            {{ __('Default') }}
+                        </a>
+                    </div>
                     <div class="col-md-6 d-flex align-items-center">
-                        <a v-if="user.default_template" class="btn btn-primary mr-4" :href="fetchLink">
-                            {{ __('Download Template') }}
+                        <a v-if="user.default_template" class="btn btn-success mr-4" :href="fetchLink">
+                            {{ __('Download My Custom Template') }}
                         </a>
                         <div class="spark-uploader mr-4">
                             <input ref="default_template" type="file" class="spark-uploader-control" name="default_template" @change="update" :disabled="form.busy">
