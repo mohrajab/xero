@@ -87,7 +87,7 @@ class InvoiceController extends Controller
 
         //        dd($keys, $values);
         $file=public_path('test.docx');
-        if(iAuth::user()->default_template)
+        if(Auth::user()->default_template)
             $file=Auth::user()->default_template;
 
         $templateProcessor = new TemplateProcessor($file);
