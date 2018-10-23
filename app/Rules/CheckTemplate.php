@@ -27,8 +27,14 @@ class CheckTemplate implements Rule
         $path = $value->store("files");
         $templateProcessor = new TemplateProcessor(Storage::path($path));
         $variables = $templateProcessor->getVariables();
+        $toCheck = [
+            'OrganisationName',
+            'OrganisationPostalAddress' ,
+            'OrganisationTaxDisplayNumber',
+            'RegisteredOffice'
+        ];
 
-        if (!$variables) {
+        if (!$variables || array_intersect($toCheck,$variables)!=$toCheck) {
             Storage::delete($path);
             return false;
         }

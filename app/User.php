@@ -126,4 +126,8 @@ class User extends SparkUser
     {
         return $this->hasMany(Point::class);
     }
+
+    public function getDefaultTemplateAttribute(){
+        return $this->attributes['default_template']?\Storage::url($this->attributes['default_template']):null;
+    }
 }

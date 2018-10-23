@@ -3,17 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UploadTemplateRequest;
-use App\Point;
-use App\Service;
 use App\TemplateProcessor;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Storage;
 use XeroPHP\Application\PublicApplication;
 use XeroPHP\Models\Accounting\Address;
 use XeroPHP\Models\Accounting\Contact;
 use XeroPHP\Models\Accounting\Invoice;
 use XeroPHP\Models\Accounting\Organisation;
 
-class AuthController extends Controller
+class InvoiceController extends Controller
 {
     protected $xero;
 
@@ -22,14 +22,22 @@ class AuthController extends Controller
         $this->xero = $xero;
     }
 
-    public function test($invoice_id = null)
+    public function generate($invoice_id)
     {
+        if (!$this->getOAuthSession()) {
+            Session::put('back_to', request()->fullUrl());
+            Session::save();
+            return redirect('authorize');
+        }
+
         $this->xero->getOAuthClient()
             ->setToken(Session::get('oauth.token'))
             ->setTokenSecret(Session::get('oauth.token_secret'));
 
-        /**@var Invoice $invoice */
-        $invoice = $this->xero->loadByGUID(Invoice::class, $invoice_id ?? '37483409-699f-4cfa-83f0-773c5d62e79f');
+        /**@var Invoice $invoice */ //'37483409-699f-4cfa-83f0-773c5d62e79f'
+        $invoice = $this->xero->loadByGUID(Invoice::class, $invoice_id);
+        if (!$invoice)
+            abort(404);
         /**@var Contact $contact */
         $contact = $this->xero->loadByGUID(Contact::class, $invoice->Contact->ContactID);
         /**@var Organisation $company */
@@ -44,7 +52,6 @@ class AuthController extends Controller
             'ContactTaxDisplayName' => '---',
             'ContactTaxNumber' => $contact->getTaxNumber(),
             'ContactAccountNumber' => $contact->getAccountNumber(),
-
         ];
 
         $mapInvoice = [
@@ -78,11 +85,12 @@ class AuthController extends Controller
         $keys = array_merge(array_merge(array_keys($mapInvoice), array_keys($mapContact)), array_keys($companyMap));
         $values = array_merge(array_merge(array_values($mapInvoice), array_values($mapContact)), array_values($companyMap));
 
-        if (file_exists(public_path('test1.docx')))
-            unlink(public_path('test1.docx'));
-
         //        dd($keys, $values);
-        $templateProcessor = new TemplateProcessor(public_path('test.docx'));
+        $file=public_path('test.docx');
+        if(iAuth::user()->default_template)
+            $file=Auth::user()->default_template;
+
+        $templateProcessor = new TemplateProcessor($file);
         $templateProcessor->setValue($keys, $values);
         /*$templateProcessor->setImg('Insert logo here', array('src' =>
             public_path('40285063_1390586571074149_5104049348275077120_n.jpg'), 'swh' => '50'));*/
@@ -101,9 +109,10 @@ class AuthController extends Controller
             $templateProcessor->setValue("TableEnd:LineItem#{$key}", '');
         }
 
-        $templateProcessor->saveAs(storage_path('app/public/files/test1.docx'));
+        $filename = str_random(20) . '.docx';
+        $templateProcessor->saveAs(storage_path('app/public/files/' . $filename));
 
-        return \Storage::download('files/test1.docx');
+        return \Storage::download("files/{$filename}");
     }
 
     public function upload(UploadTemplateRequest $request)
