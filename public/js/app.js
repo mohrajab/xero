@@ -65,14 +65,1229 @@
 /************************************************************************/
 /******/ ({
 
-/***/ "./node_modules/asap/browser-asap.js":
+/***/ "./node_modules/process/browser.js":
+/***/ (function(module, exports) {
+
+// shim for using process in browser
+var process = module.exports = {};
+
+// cached from whatever global is present so that test runners that stub it
+// don't break things.  But we need to wrap it in a try catch in case it is
+// wrapped in strict mode code which doesn't define any globals.  It's inside a
+// function because try/catches deoptimize in certain engines.
+
+var cachedSetTimeout;
+var cachedClearTimeout;
+
+function defaultSetTimout() {
+    throw new Error('setTimeout has not been defined');
+}
+function defaultClearTimeout () {
+    throw new Error('clearTimeout has not been defined');
+}
+(function () {
+    try {
+        if (typeof setTimeout === 'function') {
+            cachedSetTimeout = setTimeout;
+        } else {
+            cachedSetTimeout = defaultSetTimout;
+        }
+    } catch (e) {
+        cachedSetTimeout = defaultSetTimout;
+    }
+    try {
+        if (typeof clearTimeout === 'function') {
+            cachedClearTimeout = clearTimeout;
+        } else {
+            cachedClearTimeout = defaultClearTimeout;
+        }
+    } catch (e) {
+        cachedClearTimeout = defaultClearTimeout;
+    }
+} ())
+function runTimeout(fun) {
+    if (cachedSetTimeout === setTimeout) {
+        //normal enviroments in sane situations
+        return setTimeout(fun, 0);
+    }
+    // if setTimeout wasn't available but was latter defined
+    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+        cachedSetTimeout = setTimeout;
+        return setTimeout(fun, 0);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedSetTimeout(fun, 0);
+    } catch(e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+            return cachedSetTimeout.call(null, fun, 0);
+        } catch(e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+            return cachedSetTimeout.call(this, fun, 0);
+        }
+    }
+
+
+}
+function runClearTimeout(marker) {
+    if (cachedClearTimeout === clearTimeout) {
+        //normal enviroments in sane situations
+        return clearTimeout(marker);
+    }
+    // if clearTimeout wasn't available but was latter defined
+    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+        cachedClearTimeout = clearTimeout;
+        return clearTimeout(marker);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedClearTimeout(marker);
+    } catch (e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+            return cachedClearTimeout.call(null, marker);
+        } catch (e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+            return cachedClearTimeout.call(this, marker);
+        }
+    }
+
+
+
+}
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    if (!draining || !currentQueue) {
+        return;
+    }
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    var timeout = runTimeout(cleanUpNextTick);
+    draining = true;
+
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
+        }
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    runClearTimeout(timeout);
+}
+
+process.nextTick = function (fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
+        }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        runTimeout(drainQueue);
+    }
+};
+
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+process.prependListener = noop;
+process.prependOnceListener = noop;
+
+process.listeners = function (name) { return [] }
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
+
+
+/***/ }),
+
+/***/ "./node_modules/setimmediate/setImmediate.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+/* WEBPACK VAR INJECTION */(function(global, process) {(function (global, undefined) {
+    "use strict";
+
+    if (global.setImmediate) {
+        return;
+    }
+
+    var nextHandle = 1; // Spec says greater than zero
+    var tasksByHandle = {};
+    var currentlyRunningATask = false;
+    var doc = global.document;
+    var registerImmediate;
+
+    function setImmediate(callback) {
+      // Callback can either be a function or a string
+      if (typeof callback !== "function") {
+        callback = new Function("" + callback);
+      }
+      // Copy function arguments
+      var args = new Array(arguments.length - 1);
+      for (var i = 0; i < args.length; i++) {
+          args[i] = arguments[i + 1];
+      }
+      // Store and register the task
+      var task = { callback: callback, args: args };
+      tasksByHandle[nextHandle] = task;
+      registerImmediate(nextHandle);
+      return nextHandle++;
+    }
+
+    function clearImmediate(handle) {
+        delete tasksByHandle[handle];
+    }
+
+    function run(task) {
+        var callback = task.callback;
+        var args = task.args;
+        switch (args.length) {
+        case 0:
+            callback();
+            break;
+        case 1:
+            callback(args[0]);
+            break;
+        case 2:
+            callback(args[0], args[1]);
+            break;
+        case 3:
+            callback(args[0], args[1], args[2]);
+            break;
+        default:
+            callback.apply(undefined, args);
+            break;
+        }
+    }
+
+    function runIfPresent(handle) {
+        // From the spec: "Wait until any invocations of this algorithm started before this one have completed."
+        // So if we're currently running a task, we'll need to delay this invocation.
+        if (currentlyRunningATask) {
+            // Delay by doing a setTimeout. setImmediate was tried instead, but in Firefox 7 it generated a
+            // "too much recursion" error.
+            setTimeout(runIfPresent, 0, handle);
+        } else {
+            var task = tasksByHandle[handle];
+            if (task) {
+                currentlyRunningATask = true;
+                try {
+                    run(task);
+                } finally {
+                    clearImmediate(handle);
+                    currentlyRunningATask = false;
+                }
+            }
+        }
+    }
+
+    function installNextTickImplementation() {
+        registerImmediate = function(handle) {
+            process.nextTick(function () { runIfPresent(handle); });
+        };
+    }
+
+    function canUsePostMessage() {
+        // The test against `importScripts` prevents this implementation from being installed inside a web worker,
+        // where `global.postMessage` means something completely different and can't be used for this purpose.
+        if (global.postMessage && !global.importScripts) {
+            var postMessageIsAsynchronous = true;
+            var oldOnMessage = global.onmessage;
+            global.onmessage = function() {
+                postMessageIsAsynchronous = false;
+            };
+            global.postMessage("", "*");
+            global.onmessage = oldOnMessage;
+            return postMessageIsAsynchronous;
+        }
+    }
+
+    function installPostMessageImplementation() {
+        // Installs an event handler on `global` for the `message` event: see
+        // * https://developer.mozilla.org/en/DOM/window.postMessage
+        // * http://www.whatwg.org/specs/web-apps/current-work/multipage/comms.html#crossDocumentMessages
+
+        var messagePrefix = "setImmediate$" + Math.random() + "$";
+        var onGlobalMessage = function(event) {
+            if (event.source === global &&
+                typeof event.data === "string" &&
+                event.data.indexOf(messagePrefix) === 0) {
+                runIfPresent(+event.data.slice(messagePrefix.length));
+            }
+        };
+
+        if (global.addEventListener) {
+            global.addEventListener("message", onGlobalMessage, false);
+        } else {
+            global.attachEvent("onmessage", onGlobalMessage);
+        }
+
+        registerImmediate = function(handle) {
+            global.postMessage(messagePrefix + handle, "*");
+        };
+    }
+
+    function installMessageChannelImplementation() {
+        var channel = new MessageChannel();
+        channel.port1.onmessage = function(event) {
+            var handle = event.data;
+            runIfPresent(handle);
+        };
+
+        registerImmediate = function(handle) {
+            channel.port2.postMessage(handle);
+        };
+    }
+
+    function installReadyStateChangeImplementation() {
+        var html = doc.documentElement;
+        registerImmediate = function(handle) {
+            // Create a <script> element; its readystatechange event will be fired asynchronously once it is inserted
+            // into the document. Do so, thus queuing up the task. Remember to clean up once it's been called.
+            var script = doc.createElement("script");
+            script.onreadystatechange = function () {
+                runIfPresent(handle);
+                script.onreadystatechange = null;
+                html.removeChild(script);
+                script = null;
+            };
+            html.appendChild(script);
+        };
+    }
+
+    function installSetTimeoutImplementation() {
+        registerImmediate = function(handle) {
+            setTimeout(runIfPresent, 0, handle);
+        };
+    }
+
+    // If supported, we should attach to the prototype of global, since that is where setTimeout et al. live.
+    var attachTo = Object.getPrototypeOf && Object.getPrototypeOf(global);
+    attachTo = attachTo && attachTo.setTimeout ? attachTo : global;
+
+    // Don't get fooled by e.g. browserify environments.
+    if ({}.toString.call(global.process) === "[object process]") {
+        // For Node.js before 0.9
+        installNextTickImplementation();
+
+    } else if (canUsePostMessage()) {
+        // For non-IE10 modern browsers
+        installPostMessageImplementation();
+
+    } else if (global.MessageChannel) {
+        // For web workers, where supported
+        installMessageChannelImplementation();
+
+    } else if (doc && "onreadystatechange" in doc.createElement("script")) {
+        // For IE 6–8
+        installReadyStateChangeImplementation();
+
+    } else {
+        // For older browsers
+        installSetTimeoutImplementation();
+    }
+
+    attachTo.setImmediate = setImmediate;
+    attachTo.clearImmediate = clearImmediate;
+}(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
+
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__("./node_modules/webpack/buildin/global.js"), __webpack_require__("./node_modules/process/browser.js")))
+
+/***/ }),
+
+/***/ "./node_modules/timers-browserify/main.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+/* WEBPACK VAR INJECTION */(function(global) {var scope = (typeof global !== "undefined" && global) ||
+            (typeof self !== "undefined" && self) ||
+            window;
+var apply = Function.prototype.apply;
+
+// DOM APIs, for completeness
+
+exports.setTimeout = function() {
+  return new Timeout(apply.call(setTimeout, scope, arguments), clearTimeout);
+};
+exports.setInterval = function() {
+  return new Timeout(apply.call(setInterval, scope, arguments), clearInterval);
+};
+exports.clearTimeout =
+exports.clearInterval = function(timeout) {
+  if (timeout) {
+    timeout.close();
+  }
+};
+
+function Timeout(id, clearFn) {
+  this._id = id;
+  this._clearFn = clearFn;
+}
+Timeout.prototype.unref = Timeout.prototype.ref = function() {};
+Timeout.prototype.close = function() {
+  this._clearFn.call(scope, this._id);
+};
+
+// Does not start the time, just sets up the members needed.
+exports.enroll = function(item, msecs) {
+  clearTimeout(item._idleTimeoutId);
+  item._idleTimeout = msecs;
+};
+
+exports.unenroll = function(item) {
+  clearTimeout(item._idleTimeoutId);
+  item._idleTimeout = -1;
+};
+
+exports._unrefActive = exports.active = function(item) {
+  clearTimeout(item._idleTimeoutId);
+
+  var msecs = item._idleTimeout;
+  if (msecs >= 0) {
+    item._idleTimeoutId = setTimeout(function onTimeout() {
+      if (item._onTimeout)
+        item._onTimeout();
+    }, msecs);
+  }
+};
+
+// setimmediate attaches itself to the global object
+__webpack_require__("./node_modules/setimmediate/setImmediate.js");
+// On some exotic environments, it's not clear which object `setimmediate` was
+// able to install onto.  Search each possibility in the same order as the
+// `setimmediate` library.
+exports.setImmediate = (typeof self !== "undefined" && self.setImmediate) ||
+                       (typeof global !== "undefined" && global.setImmediate) ||
+                       (this && this.setImmediate);
+exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
+                         (typeof global !== "undefined" && global.clearImmediate) ||
+                         (this && this.clearImmediate);
+
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__("./node_modules/webpack/buildin/global.js")))
+
+/***/ }),
+
+/***/ "./node_modules/webpack/buildin/global.js":
+/***/ (function(module, exports) {
+
+var g;
+
+// This works in non-strict mode
+g = (function() {
+	return this;
+})();
+
+try {
+	// This works if eval is allowed (see CSP)
+	g = g || Function("return this")() || (1,eval)("this");
+} catch(e) {
+	// This works if the window reference is available
+	if(typeof window === "object")
+		g = window;
+}
+
+// g can still be undefined, but nothing to do about it...
+// We return undefined, instead of nothing here, so it's
+// easier to handle this case. if(!global) { ...}
+
+module.exports = g;
+
+
+/***/ }),
+
+/***/ "./node_modules/webpack/buildin/module.js":
+/***/ (function(module, exports) {
+
+module.exports = function(module) {
+	if(!module.webpackPolyfill) {
+		module.deprecate = function() {};
+		module.paths = [];
+		// module.parent = undefined by default
+		if(!module.children) module.children = [];
+		Object.defineProperty(module, "loaded", {
+			enumerable: true,
+			get: function() {
+				return module.l;
+			}
+		});
+		Object.defineProperty(module, "id", {
+			enumerable: true,
+			get: function() {
+				return module.i;
+			}
+		});
+		module.webpackPolyfill = 1;
+	}
+	return module;
+};
+
+
+/***/ }),
+
+/***/ "./resources/js/app.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+
+/*
+ |--------------------------------------------------------------------------
+ | Laravel Spark Bootstrap
+ |--------------------------------------------------------------------------
+ |
+ | First, we will load all of the "core" dependencies for Spark which are
+ | libraries such as Vue and jQuery. This also loads the Spark helpers
+ | for things such as HTTP calls, forms, and form validation errors.
+ |
+ | Next, we'll create the root Vue application for Spark. This will start
+ | the entire application and attach it to the DOM. Of course, you may
+ | customize this script as you desire and load your own components.
+ |
+ */
+
+__webpack_require__("./spark/resources/assets/js/spark-bootstrap.js");
+
+__webpack_require__("./resources/js/components/bootstrap.js");
+
+var app = new Vue({
+  mixins: [__webpack_require__("./spark/resources/assets/js/spark.js")]
+});
+
+/***/ }),
+
+/***/ "./resources/js/components/bootstrap.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+
+/*
+ |--------------------------------------------------------------------------
+ | Laravel Spark Components
+ |--------------------------------------------------------------------------
+ |
+ | Here we will load the Spark components which makes up the core client
+ | application. This is also a convenient spot for you to load all of
+ | your components that you write while building your applications.
+ */
+
+__webpack_require__("./resources/js/spark-components/bootstrap.js");
+
+__webpack_require__("./resources/js/components/home.js");
+
+/***/ }),
+
+/***/ "./resources/js/components/home.js":
+/***/ (function(module, exports) {
+
+Vue.component('home', {
+    props: ['user'],
+
+    mounted: function mounted() {
+        //
+    }
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/auth/register-braintree.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/auth/register-braintree.js");
+
+Vue.component('spark-register-braintree', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/auth/register-stripe.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/auth/register-stripe.js");
+
+Vue.component('spark-register-stripe', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/bootstrap.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+
+/**
+ * Layout Components...
+ */
+__webpack_require__("./resources/js/spark-components/navbar/navbar.js");
+__webpack_require__("./resources/js/spark-components/notifications/notifications.js");
+
+/**
+ * Authentication Components...
+ */
+__webpack_require__("./resources/js/spark-components/auth/register-stripe.js");
+__webpack_require__("./resources/js/spark-components/auth/register-braintree.js");
+
+/**
+ * Settings Component...
+ */
+__webpack_require__("./resources/js/spark-components/settings/settings.js");
+
+/**
+ * Profile Settings Components...
+ */
+__webpack_require__("./resources/js/spark-components/settings/profile.js");
+__webpack_require__("./resources/js/spark-components/settings/profile/update-profile-photo.js");
+__webpack_require__("./resources/js/spark-components/settings/profile/update-contact-information.js");
+
+/**
+ * Teams Settings Components...
+ */
+__webpack_require__("./resources/js/spark-components/settings/teams.js");
+__webpack_require__("./resources/js/spark-components/settings/teams/create-team.js");
+__webpack_require__("./resources/js/spark-components/settings/teams/pending-invitations.js");
+__webpack_require__("./resources/js/spark-components/settings/teams/current-teams.js");
+__webpack_require__("./resources/js/spark-components/settings/teams/team-settings.js");
+__webpack_require__("./resources/js/spark-components/settings/teams/team-profile.js");
+__webpack_require__("./resources/js/spark-components/settings/teams/update-team-photo.js");
+__webpack_require__("./resources/js/spark-components/settings/teams/update-team-name.js");
+__webpack_require__("./resources/js/spark-components/settings/teams/team-membership.js");
+__webpack_require__("./resources/js/spark-components/settings/teams/send-invitation.js");
+__webpack_require__("./resources/js/spark-components/settings/teams/mailed-invitations.js");
+__webpack_require__("./resources/js/spark-components/settings/teams/team-members.js");
+
+/**
+ * Security Settings Components...
+ */
+__webpack_require__("./resources/js/spark-components/settings/security.js");
+__webpack_require__("./resources/js/spark-components/settings/security/update-password.js");
+__webpack_require__("./resources/js/spark-components/settings/security/enable-two-factor-auth.js");
+__webpack_require__("./resources/js/spark-components/settings/security/disable-two-factor-auth.js");
+
+/**
+ * API Settings Components...
+ */
+__webpack_require__("./resources/js/spark-components/settings/api.js");
+__webpack_require__("./resources/js/spark-components/settings/api/create-token.js");
+__webpack_require__("./resources/js/spark-components/settings/api/tokens.js");
+
+/**
+ * Subscription Settings Components...
+ */
+__webpack_require__("./resources/js/spark-components/settings/subscription.js");
+__webpack_require__("./resources/js/spark-components/settings/subscription/subscribe-stripe.js");
+__webpack_require__("./resources/js/spark-components/settings/subscription/subscribe-braintree.js");
+__webpack_require__("./resources/js/spark-components/settings/subscription/update-subscription.js");
+__webpack_require__("./resources/js/spark-components/settings/subscription/resume-subscription.js");
+__webpack_require__("./resources/js/spark-components/settings/subscription/cancel-subscription.js");
+
+/**
+ * Payment Method Components...
+ */
+__webpack_require__("./resources/js/spark-components/settings/payment-method-stripe.js");
+__webpack_require__("./resources/js/spark-components/settings/payment-method-braintree.js");
+__webpack_require__("./resources/js/spark-components/settings/payment-method/update-vat-id.js");
+__webpack_require__("./resources/js/spark-components/settings/payment-method/update-payment-method-stripe.js");
+__webpack_require__("./resources/js/spark-components/settings/payment-method/update-payment-method-braintree.js");
+__webpack_require__("./resources/js/spark-components/settings/payment-method/redeem-coupon.js");
+
+/**
+ * Billing History Components...
+ */
+__webpack_require__("./resources/js/spark-components/settings/invoices.js");
+__webpack_require__("./resources/js/spark-components/settings/invoices/update-extra-billing-information.js");
+__webpack_require__("./resources/js/spark-components/settings/invoices/invoice-list.js");
+
+/**
+ * Kiosk Components...
+ */
+__webpack_require__("./resources/js/spark-components/kiosk/kiosk.js");
+__webpack_require__("./resources/js/spark-components/kiosk/announcements.js");
+__webpack_require__("./resources/js/spark-components/kiosk/metrics.js");
+__webpack_require__("./resources/js/spark-components/kiosk/users.js");
+__webpack_require__("./resources/js/spark-components/kiosk/profile.js");
+__webpack_require__("./resources/js/spark-components/kiosk/add-discount.js");
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/kiosk/add-discount.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/kiosk/add-discount.js");
+
+Vue.component('spark-kiosk-add-discount', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/kiosk/announcements.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/kiosk/announcements.js");
+
+Vue.component('spark-kiosk-announcements', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/kiosk/kiosk.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/kiosk/kiosk.js");
+
+Vue.component('spark-kiosk', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/kiosk/metrics.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/kiosk/metrics.js");
+
+Vue.component('spark-kiosk-metrics', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/kiosk/profile.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/kiosk/profile.js");
+
+Vue.component('spark-kiosk-profile', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/kiosk/users.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/kiosk/users.js");
+
+Vue.component('spark-kiosk-users', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/navbar/navbar.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/navbar/navbar.js");
+
+Vue.component('spark-navbar', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/notifications/notifications.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/notifications/notifications.js");
+
+Vue.component('spark-notifications', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/settings/api.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/settings/api.js");
+
+Vue.component('spark-api', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/settings/api/create-token.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/settings/api/create-token.js");
+
+Vue.component('spark-create-token', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/settings/api/tokens.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/settings/api/tokens.js");
+
+Vue.component('spark-tokens', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/settings/invoices.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/settings/invoices.js");
+
+Vue.component('spark-invoices', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/settings/invoices/invoice-list.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/settings/invoices/invoice-list.js");
+
+Vue.component('spark-invoice-list', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/settings/invoices/update-extra-billing-information.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/settings/invoices/update-extra-billing-information.js");
+
+Vue.component('spark-update-extra-billing-information', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/settings/payment-method-braintree.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/settings/payment-method-braintree.js");
+
+Vue.component('spark-payment-method-braintree', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/settings/payment-method-stripe.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/settings/payment-method-stripe.js");
+
+Vue.component('spark-payment-method-stripe', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/settings/payment-method/redeem-coupon.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/settings/payment-method/redeem-coupon.js");
+
+Vue.component('spark-redeem-coupon', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/settings/payment-method/update-payment-method-braintree.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/settings/payment-method/update-payment-method-braintree.js");
+
+Vue.component('spark-update-payment-method-braintree', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/settings/payment-method/update-payment-method-stripe.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/settings/payment-method/update-payment-method-stripe.js");
+
+Vue.component('spark-update-payment-method-stripe', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/settings/payment-method/update-vat-id.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/settings/payment-method/update-vat-id.js");
+
+Vue.component('spark-update-vat-id', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/settings/profile.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/settings/profile.js");
+
+Vue.component('spark-profile', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/settings/profile/update-contact-information.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/settings/profile/update-contact-information.js");
+
+Vue.component('spark-update-contact-information', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/settings/profile/update-profile-photo.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/settings/profile/update-profile-photo.js");
+
+Vue.component('spark-update-profile-photo', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/settings/security.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/settings/security.js");
+
+Vue.component('spark-security', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/settings/security/disable-two-factor-auth.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/settings/security/disable-two-factor-auth.js");
+
+Vue.component('spark-disable-two-factor-auth', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/settings/security/enable-two-factor-auth.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/settings/security/enable-two-factor-auth.js");
+
+Vue.component('spark-enable-two-factor-auth', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/settings/security/update-password.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/settings/security/update-password.js");
+
+Vue.component('spark-update-password', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/settings/settings.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/settings/settings.js");
+
+Vue.component('spark-settings', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/settings/subscription.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/settings/subscription.js");
+
+Vue.component('spark-subscription', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/settings/subscription/cancel-subscription.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/settings/subscription/cancel-subscription.js");
+
+Vue.component('spark-cancel-subscription', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/settings/subscription/resume-subscription.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/settings/subscription/resume-subscription.js");
+
+Vue.component('spark-resume-subscription', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/settings/subscription/subscribe-braintree.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/settings/subscription/subscribe-braintree.js");
+
+Vue.component('spark-subscribe-braintree', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/settings/subscription/subscribe-stripe.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/settings/subscription/subscribe-stripe.js");
+
+Vue.component('spark-subscribe-stripe', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/settings/subscription/update-subscription.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/settings/subscription/update-subscription.js");
+
+Vue.component('spark-update-subscription', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/settings/teams.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/settings/teams.js");
+
+Vue.component('spark-teams', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/settings/teams/create-team.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/settings/teams/create-team.js");
+
+Vue.component('spark-create-team', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/settings/teams/current-teams.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/settings/teams/current-teams.js");
+
+Vue.component('spark-current-teams', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/settings/teams/mailed-invitations.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/settings/teams/mailed-invitations.js");
+
+Vue.component('spark-mailed-invitations', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/settings/teams/pending-invitations.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/settings/teams/pending-invitations.js");
+
+Vue.component('spark-pending-invitations', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/settings/teams/send-invitation.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/settings/teams/send-invitation.js");
+
+Vue.component('spark-send-invitation', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/settings/teams/team-members.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/settings/teams/team-members.js");
+
+Vue.component('spark-team-members', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/settings/teams/team-membership.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/settings/teams/team-membership.js");
+
+Vue.component('spark-team-membership', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/settings/teams/team-profile.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/settings/teams/team-profile.js");
+
+Vue.component('spark-team-profile', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/settings/teams/team-settings.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/settings/teams/team-settings.js");
+
+Vue.component('spark-team-settings', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/settings/teams/update-team-name.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/settings/teams/update-team-name.js");
+
+Vue.component('spark-update-team-name', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/js/spark-components/settings/teams/update-team-photo.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var base = __webpack_require__("./spark/resources/assets/js/settings/teams/update-team-photo.js");
+
+Vue.component('spark-update-team-photo', {
+    mixins: [base]
+});
+
+/***/ }),
+
+/***/ "./resources/sass/app-rtl.scss":
+/***/ (function(module, exports) {
+
+// removed by extract-text-webpack-plugin
+
+/***/ }),
+
+/***/ "./resources/sass/app.scss":
+/***/ (function(module, exports) {
+
+// removed by extract-text-webpack-plugin
+
+/***/ }),
+
+/***/ "./spark/node_modules/asap/browser-asap.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 // rawAsap provides everything we need except exception management.
-var rawAsap = __webpack_require__("./node_modules/asap/browser-raw.js");
+var rawAsap = __webpack_require__("./spark/node_modules/asap/browser-raw.js");
 // RawTasks are recycled to reduce GC churn.
 var freeTasks = [];
 // We queue errors to ensure they are thrown in right order (FIFO).
@@ -139,7 +1354,7 @@ RawTask.prototype.call = function () {
 
 /***/ }),
 
-/***/ "./node_modules/asap/browser-raw.js":
+/***/ "./spark/node_modules/asap/browser-raw.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -371,26 +1586,26 @@ rawAsap.makeRequestCallFromTimer = makeRequestCallFromTimer;
 
 /***/ }),
 
-/***/ "./node_modules/axios/index.js":
+/***/ "./spark/node_modules/axios/index.js":
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__("./node_modules/axios/lib/axios.js");
+module.exports = __webpack_require__("./spark/node_modules/axios/lib/axios.js");
 
 /***/ }),
 
-/***/ "./node_modules/axios/lib/adapters/xhr.js":
+/***/ "./spark/node_modules/axios/lib/adapters/xhr.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var utils = __webpack_require__("./node_modules/axios/lib/utils.js");
-var settle = __webpack_require__("./node_modules/axios/lib/core/settle.js");
-var buildURL = __webpack_require__("./node_modules/axios/lib/helpers/buildURL.js");
-var parseHeaders = __webpack_require__("./node_modules/axios/lib/helpers/parseHeaders.js");
-var isURLSameOrigin = __webpack_require__("./node_modules/axios/lib/helpers/isURLSameOrigin.js");
-var createError = __webpack_require__("./node_modules/axios/lib/core/createError.js");
-var btoa = (typeof window !== 'undefined' && window.btoa && window.btoa.bind(window)) || __webpack_require__("./node_modules/axios/lib/helpers/btoa.js");
+var utils = __webpack_require__("./spark/node_modules/axios/lib/utils.js");
+var settle = __webpack_require__("./spark/node_modules/axios/lib/core/settle.js");
+var buildURL = __webpack_require__("./spark/node_modules/axios/lib/helpers/buildURL.js");
+var parseHeaders = __webpack_require__("./spark/node_modules/axios/lib/helpers/parseHeaders.js");
+var isURLSameOrigin = __webpack_require__("./spark/node_modules/axios/lib/helpers/isURLSameOrigin.js");
+var createError = __webpack_require__("./spark/node_modules/axios/lib/core/createError.js");
+var btoa = (typeof window !== 'undefined' && window.btoa && window.btoa.bind(window)) || __webpack_require__("./spark/node_modules/axios/lib/helpers/btoa.js");
 
 module.exports = function xhrAdapter(config) {
   return new Promise(function dispatchXhrRequest(resolve, reject) {
@@ -487,7 +1702,7 @@ module.exports = function xhrAdapter(config) {
     // This is only done if running in a standard browser environment.
     // Specifically not if we're in a web worker, or react-native.
     if (utils.isStandardBrowserEnv()) {
-      var cookies = __webpack_require__("./node_modules/axios/lib/helpers/cookies.js");
+      var cookies = __webpack_require__("./spark/node_modules/axios/lib/helpers/cookies.js");
 
       // Add xsrf header
       var xsrfValue = (config.withCredentials || isURLSameOrigin(config.url)) && config.xsrfCookieName ?
@@ -566,16 +1781,16 @@ module.exports = function xhrAdapter(config) {
 
 /***/ }),
 
-/***/ "./node_modules/axios/lib/axios.js":
+/***/ "./spark/node_modules/axios/lib/axios.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var utils = __webpack_require__("./node_modules/axios/lib/utils.js");
-var bind = __webpack_require__("./node_modules/axios/lib/helpers/bind.js");
-var Axios = __webpack_require__("./node_modules/axios/lib/core/Axios.js");
-var defaults = __webpack_require__("./node_modules/axios/lib/defaults.js");
+var utils = __webpack_require__("./spark/node_modules/axios/lib/utils.js");
+var bind = __webpack_require__("./spark/node_modules/axios/lib/helpers/bind.js");
+var Axios = __webpack_require__("./spark/node_modules/axios/lib/core/Axios.js");
+var defaults = __webpack_require__("./spark/node_modules/axios/lib/defaults.js");
 
 /**
  * Create an instance of Axios
@@ -608,15 +1823,15 @@ axios.create = function create(instanceConfig) {
 };
 
 // Expose Cancel & CancelToken
-axios.Cancel = __webpack_require__("./node_modules/axios/lib/cancel/Cancel.js");
-axios.CancelToken = __webpack_require__("./node_modules/axios/lib/cancel/CancelToken.js");
-axios.isCancel = __webpack_require__("./node_modules/axios/lib/cancel/isCancel.js");
+axios.Cancel = __webpack_require__("./spark/node_modules/axios/lib/cancel/Cancel.js");
+axios.CancelToken = __webpack_require__("./spark/node_modules/axios/lib/cancel/CancelToken.js");
+axios.isCancel = __webpack_require__("./spark/node_modules/axios/lib/cancel/isCancel.js");
 
 // Expose all/spread
 axios.all = function all(promises) {
   return Promise.all(promises);
 };
-axios.spread = __webpack_require__("./node_modules/axios/lib/helpers/spread.js");
+axios.spread = __webpack_require__("./spark/node_modules/axios/lib/helpers/spread.js");
 
 module.exports = axios;
 
@@ -626,7 +1841,7 @@ module.exports.default = axios;
 
 /***/ }),
 
-/***/ "./node_modules/axios/lib/cancel/Cancel.js":
+/***/ "./spark/node_modules/axios/lib/cancel/Cancel.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -653,13 +1868,13 @@ module.exports = Cancel;
 
 /***/ }),
 
-/***/ "./node_modules/axios/lib/cancel/CancelToken.js":
+/***/ "./spark/node_modules/axios/lib/cancel/CancelToken.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var Cancel = __webpack_require__("./node_modules/axios/lib/cancel/Cancel.js");
+var Cancel = __webpack_require__("./spark/node_modules/axios/lib/cancel/Cancel.js");
 
 /**
  * A `CancelToken` is an object that can be used to request cancellation of an operation.
@@ -718,7 +1933,7 @@ module.exports = CancelToken;
 
 /***/ }),
 
-/***/ "./node_modules/axios/lib/cancel/isCancel.js":
+/***/ "./spark/node_modules/axios/lib/cancel/isCancel.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -731,16 +1946,16 @@ module.exports = function isCancel(value) {
 
 /***/ }),
 
-/***/ "./node_modules/axios/lib/core/Axios.js":
+/***/ "./spark/node_modules/axios/lib/core/Axios.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var defaults = __webpack_require__("./node_modules/axios/lib/defaults.js");
-var utils = __webpack_require__("./node_modules/axios/lib/utils.js");
-var InterceptorManager = __webpack_require__("./node_modules/axios/lib/core/InterceptorManager.js");
-var dispatchRequest = __webpack_require__("./node_modules/axios/lib/core/dispatchRequest.js");
+var defaults = __webpack_require__("./spark/node_modules/axios/lib/defaults.js");
+var utils = __webpack_require__("./spark/node_modules/axios/lib/utils.js");
+var InterceptorManager = __webpack_require__("./spark/node_modules/axios/lib/core/InterceptorManager.js");
+var dispatchRequest = __webpack_require__("./spark/node_modules/axios/lib/core/dispatchRequest.js");
 
 /**
  * Create a new instance of Axios
@@ -818,13 +2033,13 @@ module.exports = Axios;
 
 /***/ }),
 
-/***/ "./node_modules/axios/lib/core/InterceptorManager.js":
+/***/ "./spark/node_modules/axios/lib/core/InterceptorManager.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var utils = __webpack_require__("./node_modules/axios/lib/utils.js");
+var utils = __webpack_require__("./spark/node_modules/axios/lib/utils.js");
 
 function InterceptorManager() {
   this.handlers = [];
@@ -878,13 +2093,13 @@ module.exports = InterceptorManager;
 
 /***/ }),
 
-/***/ "./node_modules/axios/lib/core/createError.js":
+/***/ "./spark/node_modules/axios/lib/core/createError.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var enhanceError = __webpack_require__("./node_modules/axios/lib/core/enhanceError.js");
+var enhanceError = __webpack_require__("./spark/node_modules/axios/lib/core/enhanceError.js");
 
 /**
  * Create an Error with the specified message, config, error code, request and response.
@@ -904,18 +2119,18 @@ module.exports = function createError(message, config, code, request, response) 
 
 /***/ }),
 
-/***/ "./node_modules/axios/lib/core/dispatchRequest.js":
+/***/ "./spark/node_modules/axios/lib/core/dispatchRequest.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var utils = __webpack_require__("./node_modules/axios/lib/utils.js");
-var transformData = __webpack_require__("./node_modules/axios/lib/core/transformData.js");
-var isCancel = __webpack_require__("./node_modules/axios/lib/cancel/isCancel.js");
-var defaults = __webpack_require__("./node_modules/axios/lib/defaults.js");
-var isAbsoluteURL = __webpack_require__("./node_modules/axios/lib/helpers/isAbsoluteURL.js");
-var combineURLs = __webpack_require__("./node_modules/axios/lib/helpers/combineURLs.js");
+var utils = __webpack_require__("./spark/node_modules/axios/lib/utils.js");
+var transformData = __webpack_require__("./spark/node_modules/axios/lib/core/transformData.js");
+var isCancel = __webpack_require__("./spark/node_modules/axios/lib/cancel/isCancel.js");
+var defaults = __webpack_require__("./spark/node_modules/axios/lib/defaults.js");
+var isAbsoluteURL = __webpack_require__("./spark/node_modules/axios/lib/helpers/isAbsoluteURL.js");
+var combineURLs = __webpack_require__("./spark/node_modules/axios/lib/helpers/combineURLs.js");
 
 /**
  * Throws a `Cancel` if cancellation has been requested.
@@ -998,7 +2213,7 @@ module.exports = function dispatchRequest(config) {
 
 /***/ }),
 
-/***/ "./node_modules/axios/lib/core/enhanceError.js":
+/***/ "./spark/node_modules/axios/lib/core/enhanceError.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1027,13 +2242,13 @@ module.exports = function enhanceError(error, config, code, request, response) {
 
 /***/ }),
 
-/***/ "./node_modules/axios/lib/core/settle.js":
+/***/ "./spark/node_modules/axios/lib/core/settle.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var createError = __webpack_require__("./node_modules/axios/lib/core/createError.js");
+var createError = __webpack_require__("./spark/node_modules/axios/lib/core/createError.js");
 
 /**
  * Resolve or reject a Promise based on response status.
@@ -1061,13 +2276,13 @@ module.exports = function settle(resolve, reject, response) {
 
 /***/ }),
 
-/***/ "./node_modules/axios/lib/core/transformData.js":
+/***/ "./spark/node_modules/axios/lib/core/transformData.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var utils = __webpack_require__("./node_modules/axios/lib/utils.js");
+var utils = __webpack_require__("./spark/node_modules/axios/lib/utils.js");
 
 /**
  * Transform the data for a request or a response
@@ -1089,14 +2304,14 @@ module.exports = function transformData(data, headers, fns) {
 
 /***/ }),
 
-/***/ "./node_modules/axios/lib/defaults.js":
+/***/ "./spark/node_modules/axios/lib/defaults.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 /* WEBPACK VAR INJECTION */(function(process) {
 
-var utils = __webpack_require__("./node_modules/axios/lib/utils.js");
-var normalizeHeaderName = __webpack_require__("./node_modules/axios/lib/helpers/normalizeHeaderName.js");
+var utils = __webpack_require__("./spark/node_modules/axios/lib/utils.js");
+var normalizeHeaderName = __webpack_require__("./spark/node_modules/axios/lib/helpers/normalizeHeaderName.js");
 
 var DEFAULT_CONTENT_TYPE = {
   'Content-Type': 'application/x-www-form-urlencoded'
@@ -1112,10 +2327,10 @@ function getDefaultAdapter() {
   var adapter;
   if (typeof XMLHttpRequest !== 'undefined') {
     // For browsers use XHR adapter
-    adapter = __webpack_require__("./node_modules/axios/lib/adapters/xhr.js");
+    adapter = __webpack_require__("./spark/node_modules/axios/lib/adapters/xhr.js");
   } else if (typeof process !== 'undefined') {
     // For node use HTTP adapter
-    adapter = __webpack_require__("./node_modules/axios/lib/adapters/xhr.js");
+    adapter = __webpack_require__("./spark/node_modules/axios/lib/adapters/xhr.js");
   }
   return adapter;
 }
@@ -1194,7 +2409,7 @@ module.exports = defaults;
 
 /***/ }),
 
-/***/ "./node_modules/axios/lib/helpers/bind.js":
+/***/ "./spark/node_modules/axios/lib/helpers/bind.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1213,7 +2428,7 @@ module.exports = function bind(fn, thisArg) {
 
 /***/ }),
 
-/***/ "./node_modules/axios/lib/helpers/btoa.js":
+/***/ "./spark/node_modules/axios/lib/helpers/btoa.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1257,13 +2472,13 @@ module.exports = btoa;
 
 /***/ }),
 
-/***/ "./node_modules/axios/lib/helpers/buildURL.js":
+/***/ "./spark/node_modules/axios/lib/helpers/buildURL.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var utils = __webpack_require__("./node_modules/axios/lib/utils.js");
+var utils = __webpack_require__("./spark/node_modules/axios/lib/utils.js");
 
 function encode(val) {
   return encodeURIComponent(val).
@@ -1331,7 +2546,7 @@ module.exports = function buildURL(url, params, paramsSerializer) {
 
 /***/ }),
 
-/***/ "./node_modules/axios/lib/helpers/combineURLs.js":
+/***/ "./spark/node_modules/axios/lib/helpers/combineURLs.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1353,13 +2568,13 @@ module.exports = function combineURLs(baseURL, relativeURL) {
 
 /***/ }),
 
-/***/ "./node_modules/axios/lib/helpers/cookies.js":
+/***/ "./spark/node_modules/axios/lib/helpers/cookies.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var utils = __webpack_require__("./node_modules/axios/lib/utils.js");
+var utils = __webpack_require__("./spark/node_modules/axios/lib/utils.js");
 
 module.exports = (
   utils.isStandardBrowserEnv() ?
@@ -1414,7 +2629,7 @@ module.exports = (
 
 /***/ }),
 
-/***/ "./node_modules/axios/lib/helpers/isAbsoluteURL.js":
+/***/ "./spark/node_modules/axios/lib/helpers/isAbsoluteURL.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1436,13 +2651,13 @@ module.exports = function isAbsoluteURL(url) {
 
 /***/ }),
 
-/***/ "./node_modules/axios/lib/helpers/isURLSameOrigin.js":
+/***/ "./spark/node_modules/axios/lib/helpers/isURLSameOrigin.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var utils = __webpack_require__("./node_modules/axios/lib/utils.js");
+var utils = __webpack_require__("./spark/node_modules/axios/lib/utils.js");
 
 module.exports = (
   utils.isStandardBrowserEnv() ?
@@ -1512,13 +2727,13 @@ module.exports = (
 
 /***/ }),
 
-/***/ "./node_modules/axios/lib/helpers/normalizeHeaderName.js":
+/***/ "./spark/node_modules/axios/lib/helpers/normalizeHeaderName.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var utils = __webpack_require__("./node_modules/axios/lib/utils.js");
+var utils = __webpack_require__("./spark/node_modules/axios/lib/utils.js");
 
 module.exports = function normalizeHeaderName(headers, normalizedName) {
   utils.forEach(headers, function processHeader(value, name) {
@@ -1532,13 +2747,13 @@ module.exports = function normalizeHeaderName(headers, normalizedName) {
 
 /***/ }),
 
-/***/ "./node_modules/axios/lib/helpers/parseHeaders.js":
+/***/ "./spark/node_modules/axios/lib/helpers/parseHeaders.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var utils = __webpack_require__("./node_modules/axios/lib/utils.js");
+var utils = __webpack_require__("./spark/node_modules/axios/lib/utils.js");
 
 // Headers whose duplicates are ignored by node
 // c.f. https://nodejs.org/api/http.html#http_message_headers
@@ -1593,7 +2808,7 @@ module.exports = function parseHeaders(headers) {
 
 /***/ }),
 
-/***/ "./node_modules/axios/lib/helpers/spread.js":
+/***/ "./spark/node_modules/axios/lib/helpers/spread.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1628,14 +2843,14 @@ module.exports = function spread(callback) {
 
 /***/ }),
 
-/***/ "./node_modules/axios/lib/utils.js":
+/***/ "./spark/node_modules/axios/lib/utils.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var bind = __webpack_require__("./node_modules/axios/lib/helpers/bind.js");
-var isBuffer = __webpack_require__("./node_modules/is-buffer/index.js");
+var bind = __webpack_require__("./spark/node_modules/axios/lib/helpers/bind.js");
+var isBuffer = __webpack_require__("./spark/node_modules/is-buffer/index.js");
 
 /*global toString:true*/
 
@@ -1939,7 +3154,7 @@ module.exports = {
 
 /***/ }),
 
-/***/ "./node_modules/bootstrap/dist/js/bootstrap.js":
+/***/ "./spark/node_modules/bootstrap/dist/js/bootstrap.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 /*!
@@ -1948,7 +3163,7 @@ module.exports = {
   * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
   */
 (function (global, factory) {
-   true ? factory(exports, __webpack_require__("./node_modules/jquery/dist/jquery.js"), __webpack_require__("./node_modules/popper.js/dist/esm/popper.js")) :
+   true ? factory(exports, __webpack_require__("./spark/node_modules/jquery/dist/jquery.js"), __webpack_require__("./spark/node_modules/popper.js/dist/esm/popper.js")) :
   typeof define === 'function' && define.amd ? define(['exports', 'jquery', 'popper.js'], factory) :
   (factory((global.bootstrap = {}),global.jQuery,global.Popper));
 }(this, (function (exports,$,Popper) { 'use strict';
@@ -5890,7 +7105,7 @@ module.exports = {
 
 /***/ }),
 
-/***/ "./node_modules/is-buffer/index.js":
+/***/ "./spark/node_modules/is-buffer/index.js":
 /***/ (function(module, exports) {
 
 /*!
@@ -5918,7 +7133,7 @@ function isSlowBuffer (obj) {
 
 /***/ }),
 
-/***/ "./node_modules/jquery/dist/jquery.js":
+/***/ "./spark/node_modules/jquery/dist/jquery.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -16290,7 +17505,7 @@ return jQuery;
 
 /***/ }),
 
-/***/ "./node_modules/lodash/lodash.js":
+/***/ "./spark/node_modules/lodash/lodash.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, module) {var __WEBPACK_AMD_DEFINE_RESULT__;/**
@@ -33406,256 +34621,256 @@ return jQuery;
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale recursive ^\\.\\/.*$":
+/***/ "./spark/node_modules/moment/locale recursive ^\\.\\/.*$":
 /***/ (function(module, exports, __webpack_require__) {
 
 var map = {
-	"./af": "./node_modules/moment/locale/af.js",
-	"./af.js": "./node_modules/moment/locale/af.js",
-	"./ar": "./node_modules/moment/locale/ar.js",
-	"./ar-dz": "./node_modules/moment/locale/ar-dz.js",
-	"./ar-dz.js": "./node_modules/moment/locale/ar-dz.js",
-	"./ar-kw": "./node_modules/moment/locale/ar-kw.js",
-	"./ar-kw.js": "./node_modules/moment/locale/ar-kw.js",
-	"./ar-ly": "./node_modules/moment/locale/ar-ly.js",
-	"./ar-ly.js": "./node_modules/moment/locale/ar-ly.js",
-	"./ar-ma": "./node_modules/moment/locale/ar-ma.js",
-	"./ar-ma.js": "./node_modules/moment/locale/ar-ma.js",
-	"./ar-sa": "./node_modules/moment/locale/ar-sa.js",
-	"./ar-sa.js": "./node_modules/moment/locale/ar-sa.js",
-	"./ar-tn": "./node_modules/moment/locale/ar-tn.js",
-	"./ar-tn.js": "./node_modules/moment/locale/ar-tn.js",
-	"./ar.js": "./node_modules/moment/locale/ar.js",
-	"./az": "./node_modules/moment/locale/az.js",
-	"./az.js": "./node_modules/moment/locale/az.js",
-	"./be": "./node_modules/moment/locale/be.js",
-	"./be.js": "./node_modules/moment/locale/be.js",
-	"./bg": "./node_modules/moment/locale/bg.js",
-	"./bg.js": "./node_modules/moment/locale/bg.js",
-	"./bm": "./node_modules/moment/locale/bm.js",
-	"./bm.js": "./node_modules/moment/locale/bm.js",
-	"./bn": "./node_modules/moment/locale/bn.js",
-	"./bn.js": "./node_modules/moment/locale/bn.js",
-	"./bo": "./node_modules/moment/locale/bo.js",
-	"./bo.js": "./node_modules/moment/locale/bo.js",
-	"./br": "./node_modules/moment/locale/br.js",
-	"./br.js": "./node_modules/moment/locale/br.js",
-	"./bs": "./node_modules/moment/locale/bs.js",
-	"./bs.js": "./node_modules/moment/locale/bs.js",
-	"./ca": "./node_modules/moment/locale/ca.js",
-	"./ca.js": "./node_modules/moment/locale/ca.js",
-	"./cs": "./node_modules/moment/locale/cs.js",
-	"./cs.js": "./node_modules/moment/locale/cs.js",
-	"./cv": "./node_modules/moment/locale/cv.js",
-	"./cv.js": "./node_modules/moment/locale/cv.js",
-	"./cy": "./node_modules/moment/locale/cy.js",
-	"./cy.js": "./node_modules/moment/locale/cy.js",
-	"./da": "./node_modules/moment/locale/da.js",
-	"./da.js": "./node_modules/moment/locale/da.js",
-	"./de": "./node_modules/moment/locale/de.js",
-	"./de-at": "./node_modules/moment/locale/de-at.js",
-	"./de-at.js": "./node_modules/moment/locale/de-at.js",
-	"./de-ch": "./node_modules/moment/locale/de-ch.js",
-	"./de-ch.js": "./node_modules/moment/locale/de-ch.js",
-	"./de.js": "./node_modules/moment/locale/de.js",
-	"./dv": "./node_modules/moment/locale/dv.js",
-	"./dv.js": "./node_modules/moment/locale/dv.js",
-	"./el": "./node_modules/moment/locale/el.js",
-	"./el.js": "./node_modules/moment/locale/el.js",
-	"./en-au": "./node_modules/moment/locale/en-au.js",
-	"./en-au.js": "./node_modules/moment/locale/en-au.js",
-	"./en-ca": "./node_modules/moment/locale/en-ca.js",
-	"./en-ca.js": "./node_modules/moment/locale/en-ca.js",
-	"./en-gb": "./node_modules/moment/locale/en-gb.js",
-	"./en-gb.js": "./node_modules/moment/locale/en-gb.js",
-	"./en-ie": "./node_modules/moment/locale/en-ie.js",
-	"./en-ie.js": "./node_modules/moment/locale/en-ie.js",
-	"./en-il": "./node_modules/moment/locale/en-il.js",
-	"./en-il.js": "./node_modules/moment/locale/en-il.js",
-	"./en-nz": "./node_modules/moment/locale/en-nz.js",
-	"./en-nz.js": "./node_modules/moment/locale/en-nz.js",
-	"./eo": "./node_modules/moment/locale/eo.js",
-	"./eo.js": "./node_modules/moment/locale/eo.js",
-	"./es": "./node_modules/moment/locale/es.js",
-	"./es-do": "./node_modules/moment/locale/es-do.js",
-	"./es-do.js": "./node_modules/moment/locale/es-do.js",
-	"./es-us": "./node_modules/moment/locale/es-us.js",
-	"./es-us.js": "./node_modules/moment/locale/es-us.js",
-	"./es.js": "./node_modules/moment/locale/es.js",
-	"./et": "./node_modules/moment/locale/et.js",
-	"./et.js": "./node_modules/moment/locale/et.js",
-	"./eu": "./node_modules/moment/locale/eu.js",
-	"./eu.js": "./node_modules/moment/locale/eu.js",
-	"./fa": "./node_modules/moment/locale/fa.js",
-	"./fa.js": "./node_modules/moment/locale/fa.js",
-	"./fi": "./node_modules/moment/locale/fi.js",
-	"./fi.js": "./node_modules/moment/locale/fi.js",
-	"./fo": "./node_modules/moment/locale/fo.js",
-	"./fo.js": "./node_modules/moment/locale/fo.js",
-	"./fr": "./node_modules/moment/locale/fr.js",
-	"./fr-ca": "./node_modules/moment/locale/fr-ca.js",
-	"./fr-ca.js": "./node_modules/moment/locale/fr-ca.js",
-	"./fr-ch": "./node_modules/moment/locale/fr-ch.js",
-	"./fr-ch.js": "./node_modules/moment/locale/fr-ch.js",
-	"./fr.js": "./node_modules/moment/locale/fr.js",
-	"./fy": "./node_modules/moment/locale/fy.js",
-	"./fy.js": "./node_modules/moment/locale/fy.js",
-	"./gd": "./node_modules/moment/locale/gd.js",
-	"./gd.js": "./node_modules/moment/locale/gd.js",
-	"./gl": "./node_modules/moment/locale/gl.js",
-	"./gl.js": "./node_modules/moment/locale/gl.js",
-	"./gom-latn": "./node_modules/moment/locale/gom-latn.js",
-	"./gom-latn.js": "./node_modules/moment/locale/gom-latn.js",
-	"./gu": "./node_modules/moment/locale/gu.js",
-	"./gu.js": "./node_modules/moment/locale/gu.js",
-	"./he": "./node_modules/moment/locale/he.js",
-	"./he.js": "./node_modules/moment/locale/he.js",
-	"./hi": "./node_modules/moment/locale/hi.js",
-	"./hi.js": "./node_modules/moment/locale/hi.js",
-	"./hr": "./node_modules/moment/locale/hr.js",
-	"./hr.js": "./node_modules/moment/locale/hr.js",
-	"./hu": "./node_modules/moment/locale/hu.js",
-	"./hu.js": "./node_modules/moment/locale/hu.js",
-	"./hy-am": "./node_modules/moment/locale/hy-am.js",
-	"./hy-am.js": "./node_modules/moment/locale/hy-am.js",
-	"./id": "./node_modules/moment/locale/id.js",
-	"./id.js": "./node_modules/moment/locale/id.js",
-	"./is": "./node_modules/moment/locale/is.js",
-	"./is.js": "./node_modules/moment/locale/is.js",
-	"./it": "./node_modules/moment/locale/it.js",
-	"./it.js": "./node_modules/moment/locale/it.js",
-	"./ja": "./node_modules/moment/locale/ja.js",
-	"./ja.js": "./node_modules/moment/locale/ja.js",
-	"./jv": "./node_modules/moment/locale/jv.js",
-	"./jv.js": "./node_modules/moment/locale/jv.js",
-	"./ka": "./node_modules/moment/locale/ka.js",
-	"./ka.js": "./node_modules/moment/locale/ka.js",
-	"./kk": "./node_modules/moment/locale/kk.js",
-	"./kk.js": "./node_modules/moment/locale/kk.js",
-	"./km": "./node_modules/moment/locale/km.js",
-	"./km.js": "./node_modules/moment/locale/km.js",
-	"./kn": "./node_modules/moment/locale/kn.js",
-	"./kn.js": "./node_modules/moment/locale/kn.js",
-	"./ko": "./node_modules/moment/locale/ko.js",
-	"./ko.js": "./node_modules/moment/locale/ko.js",
-	"./ky": "./node_modules/moment/locale/ky.js",
-	"./ky.js": "./node_modules/moment/locale/ky.js",
-	"./lb": "./node_modules/moment/locale/lb.js",
-	"./lb.js": "./node_modules/moment/locale/lb.js",
-	"./lo": "./node_modules/moment/locale/lo.js",
-	"./lo.js": "./node_modules/moment/locale/lo.js",
-	"./lt": "./node_modules/moment/locale/lt.js",
-	"./lt.js": "./node_modules/moment/locale/lt.js",
-	"./lv": "./node_modules/moment/locale/lv.js",
-	"./lv.js": "./node_modules/moment/locale/lv.js",
-	"./me": "./node_modules/moment/locale/me.js",
-	"./me.js": "./node_modules/moment/locale/me.js",
-	"./mi": "./node_modules/moment/locale/mi.js",
-	"./mi.js": "./node_modules/moment/locale/mi.js",
-	"./mk": "./node_modules/moment/locale/mk.js",
-	"./mk.js": "./node_modules/moment/locale/mk.js",
-	"./ml": "./node_modules/moment/locale/ml.js",
-	"./ml.js": "./node_modules/moment/locale/ml.js",
-	"./mn": "./node_modules/moment/locale/mn.js",
-	"./mn.js": "./node_modules/moment/locale/mn.js",
-	"./mr": "./node_modules/moment/locale/mr.js",
-	"./mr.js": "./node_modules/moment/locale/mr.js",
-	"./ms": "./node_modules/moment/locale/ms.js",
-	"./ms-my": "./node_modules/moment/locale/ms-my.js",
-	"./ms-my.js": "./node_modules/moment/locale/ms-my.js",
-	"./ms.js": "./node_modules/moment/locale/ms.js",
-	"./mt": "./node_modules/moment/locale/mt.js",
-	"./mt.js": "./node_modules/moment/locale/mt.js",
-	"./my": "./node_modules/moment/locale/my.js",
-	"./my.js": "./node_modules/moment/locale/my.js",
-	"./nb": "./node_modules/moment/locale/nb.js",
-	"./nb.js": "./node_modules/moment/locale/nb.js",
-	"./ne": "./node_modules/moment/locale/ne.js",
-	"./ne.js": "./node_modules/moment/locale/ne.js",
-	"./nl": "./node_modules/moment/locale/nl.js",
-	"./nl-be": "./node_modules/moment/locale/nl-be.js",
-	"./nl-be.js": "./node_modules/moment/locale/nl-be.js",
-	"./nl.js": "./node_modules/moment/locale/nl.js",
-	"./nn": "./node_modules/moment/locale/nn.js",
-	"./nn.js": "./node_modules/moment/locale/nn.js",
-	"./pa-in": "./node_modules/moment/locale/pa-in.js",
-	"./pa-in.js": "./node_modules/moment/locale/pa-in.js",
-	"./pl": "./node_modules/moment/locale/pl.js",
-	"./pl.js": "./node_modules/moment/locale/pl.js",
-	"./pt": "./node_modules/moment/locale/pt.js",
-	"./pt-br": "./node_modules/moment/locale/pt-br.js",
-	"./pt-br.js": "./node_modules/moment/locale/pt-br.js",
-	"./pt.js": "./node_modules/moment/locale/pt.js",
-	"./ro": "./node_modules/moment/locale/ro.js",
-	"./ro.js": "./node_modules/moment/locale/ro.js",
-	"./ru": "./node_modules/moment/locale/ru.js",
-	"./ru.js": "./node_modules/moment/locale/ru.js",
-	"./sd": "./node_modules/moment/locale/sd.js",
-	"./sd.js": "./node_modules/moment/locale/sd.js",
-	"./se": "./node_modules/moment/locale/se.js",
-	"./se.js": "./node_modules/moment/locale/se.js",
-	"./si": "./node_modules/moment/locale/si.js",
-	"./si.js": "./node_modules/moment/locale/si.js",
-	"./sk": "./node_modules/moment/locale/sk.js",
-	"./sk.js": "./node_modules/moment/locale/sk.js",
-	"./sl": "./node_modules/moment/locale/sl.js",
-	"./sl.js": "./node_modules/moment/locale/sl.js",
-	"./sq": "./node_modules/moment/locale/sq.js",
-	"./sq.js": "./node_modules/moment/locale/sq.js",
-	"./sr": "./node_modules/moment/locale/sr.js",
-	"./sr-cyrl": "./node_modules/moment/locale/sr-cyrl.js",
-	"./sr-cyrl.js": "./node_modules/moment/locale/sr-cyrl.js",
-	"./sr.js": "./node_modules/moment/locale/sr.js",
-	"./ss": "./node_modules/moment/locale/ss.js",
-	"./ss.js": "./node_modules/moment/locale/ss.js",
-	"./sv": "./node_modules/moment/locale/sv.js",
-	"./sv.js": "./node_modules/moment/locale/sv.js",
-	"./sw": "./node_modules/moment/locale/sw.js",
-	"./sw.js": "./node_modules/moment/locale/sw.js",
-	"./ta": "./node_modules/moment/locale/ta.js",
-	"./ta.js": "./node_modules/moment/locale/ta.js",
-	"./te": "./node_modules/moment/locale/te.js",
-	"./te.js": "./node_modules/moment/locale/te.js",
-	"./tet": "./node_modules/moment/locale/tet.js",
-	"./tet.js": "./node_modules/moment/locale/tet.js",
-	"./tg": "./node_modules/moment/locale/tg.js",
-	"./tg.js": "./node_modules/moment/locale/tg.js",
-	"./th": "./node_modules/moment/locale/th.js",
-	"./th.js": "./node_modules/moment/locale/th.js",
-	"./tl-ph": "./node_modules/moment/locale/tl-ph.js",
-	"./tl-ph.js": "./node_modules/moment/locale/tl-ph.js",
-	"./tlh": "./node_modules/moment/locale/tlh.js",
-	"./tlh.js": "./node_modules/moment/locale/tlh.js",
-	"./tr": "./node_modules/moment/locale/tr.js",
-	"./tr.js": "./node_modules/moment/locale/tr.js",
-	"./tzl": "./node_modules/moment/locale/tzl.js",
-	"./tzl.js": "./node_modules/moment/locale/tzl.js",
-	"./tzm": "./node_modules/moment/locale/tzm.js",
-	"./tzm-latn": "./node_modules/moment/locale/tzm-latn.js",
-	"./tzm-latn.js": "./node_modules/moment/locale/tzm-latn.js",
-	"./tzm.js": "./node_modules/moment/locale/tzm.js",
-	"./ug-cn": "./node_modules/moment/locale/ug-cn.js",
-	"./ug-cn.js": "./node_modules/moment/locale/ug-cn.js",
-	"./uk": "./node_modules/moment/locale/uk.js",
-	"./uk.js": "./node_modules/moment/locale/uk.js",
-	"./ur": "./node_modules/moment/locale/ur.js",
-	"./ur.js": "./node_modules/moment/locale/ur.js",
-	"./uz": "./node_modules/moment/locale/uz.js",
-	"./uz-latn": "./node_modules/moment/locale/uz-latn.js",
-	"./uz-latn.js": "./node_modules/moment/locale/uz-latn.js",
-	"./uz.js": "./node_modules/moment/locale/uz.js",
-	"./vi": "./node_modules/moment/locale/vi.js",
-	"./vi.js": "./node_modules/moment/locale/vi.js",
-	"./x-pseudo": "./node_modules/moment/locale/x-pseudo.js",
-	"./x-pseudo.js": "./node_modules/moment/locale/x-pseudo.js",
-	"./yo": "./node_modules/moment/locale/yo.js",
-	"./yo.js": "./node_modules/moment/locale/yo.js",
-	"./zh-cn": "./node_modules/moment/locale/zh-cn.js",
-	"./zh-cn.js": "./node_modules/moment/locale/zh-cn.js",
-	"./zh-hk": "./node_modules/moment/locale/zh-hk.js",
-	"./zh-hk.js": "./node_modules/moment/locale/zh-hk.js",
-	"./zh-tw": "./node_modules/moment/locale/zh-tw.js",
-	"./zh-tw.js": "./node_modules/moment/locale/zh-tw.js"
+	"./af": "./spark/node_modules/moment/locale/af.js",
+	"./af.js": "./spark/node_modules/moment/locale/af.js",
+	"./ar": "./spark/node_modules/moment/locale/ar.js",
+	"./ar-dz": "./spark/node_modules/moment/locale/ar-dz.js",
+	"./ar-dz.js": "./spark/node_modules/moment/locale/ar-dz.js",
+	"./ar-kw": "./spark/node_modules/moment/locale/ar-kw.js",
+	"./ar-kw.js": "./spark/node_modules/moment/locale/ar-kw.js",
+	"./ar-ly": "./spark/node_modules/moment/locale/ar-ly.js",
+	"./ar-ly.js": "./spark/node_modules/moment/locale/ar-ly.js",
+	"./ar-ma": "./spark/node_modules/moment/locale/ar-ma.js",
+	"./ar-ma.js": "./spark/node_modules/moment/locale/ar-ma.js",
+	"./ar-sa": "./spark/node_modules/moment/locale/ar-sa.js",
+	"./ar-sa.js": "./spark/node_modules/moment/locale/ar-sa.js",
+	"./ar-tn": "./spark/node_modules/moment/locale/ar-tn.js",
+	"./ar-tn.js": "./spark/node_modules/moment/locale/ar-tn.js",
+	"./ar.js": "./spark/node_modules/moment/locale/ar.js",
+	"./az": "./spark/node_modules/moment/locale/az.js",
+	"./az.js": "./spark/node_modules/moment/locale/az.js",
+	"./be": "./spark/node_modules/moment/locale/be.js",
+	"./be.js": "./spark/node_modules/moment/locale/be.js",
+	"./bg": "./spark/node_modules/moment/locale/bg.js",
+	"./bg.js": "./spark/node_modules/moment/locale/bg.js",
+	"./bm": "./spark/node_modules/moment/locale/bm.js",
+	"./bm.js": "./spark/node_modules/moment/locale/bm.js",
+	"./bn": "./spark/node_modules/moment/locale/bn.js",
+	"./bn.js": "./spark/node_modules/moment/locale/bn.js",
+	"./bo": "./spark/node_modules/moment/locale/bo.js",
+	"./bo.js": "./spark/node_modules/moment/locale/bo.js",
+	"./br": "./spark/node_modules/moment/locale/br.js",
+	"./br.js": "./spark/node_modules/moment/locale/br.js",
+	"./bs": "./spark/node_modules/moment/locale/bs.js",
+	"./bs.js": "./spark/node_modules/moment/locale/bs.js",
+	"./ca": "./spark/node_modules/moment/locale/ca.js",
+	"./ca.js": "./spark/node_modules/moment/locale/ca.js",
+	"./cs": "./spark/node_modules/moment/locale/cs.js",
+	"./cs.js": "./spark/node_modules/moment/locale/cs.js",
+	"./cv": "./spark/node_modules/moment/locale/cv.js",
+	"./cv.js": "./spark/node_modules/moment/locale/cv.js",
+	"./cy": "./spark/node_modules/moment/locale/cy.js",
+	"./cy.js": "./spark/node_modules/moment/locale/cy.js",
+	"./da": "./spark/node_modules/moment/locale/da.js",
+	"./da.js": "./spark/node_modules/moment/locale/da.js",
+	"./de": "./spark/node_modules/moment/locale/de.js",
+	"./de-at": "./spark/node_modules/moment/locale/de-at.js",
+	"./de-at.js": "./spark/node_modules/moment/locale/de-at.js",
+	"./de-ch": "./spark/node_modules/moment/locale/de-ch.js",
+	"./de-ch.js": "./spark/node_modules/moment/locale/de-ch.js",
+	"./de.js": "./spark/node_modules/moment/locale/de.js",
+	"./dv": "./spark/node_modules/moment/locale/dv.js",
+	"./dv.js": "./spark/node_modules/moment/locale/dv.js",
+	"./el": "./spark/node_modules/moment/locale/el.js",
+	"./el.js": "./spark/node_modules/moment/locale/el.js",
+	"./en-au": "./spark/node_modules/moment/locale/en-au.js",
+	"./en-au.js": "./spark/node_modules/moment/locale/en-au.js",
+	"./en-ca": "./spark/node_modules/moment/locale/en-ca.js",
+	"./en-ca.js": "./spark/node_modules/moment/locale/en-ca.js",
+	"./en-gb": "./spark/node_modules/moment/locale/en-gb.js",
+	"./en-gb.js": "./spark/node_modules/moment/locale/en-gb.js",
+	"./en-ie": "./spark/node_modules/moment/locale/en-ie.js",
+	"./en-ie.js": "./spark/node_modules/moment/locale/en-ie.js",
+	"./en-il": "./spark/node_modules/moment/locale/en-il.js",
+	"./en-il.js": "./spark/node_modules/moment/locale/en-il.js",
+	"./en-nz": "./spark/node_modules/moment/locale/en-nz.js",
+	"./en-nz.js": "./spark/node_modules/moment/locale/en-nz.js",
+	"./eo": "./spark/node_modules/moment/locale/eo.js",
+	"./eo.js": "./spark/node_modules/moment/locale/eo.js",
+	"./es": "./spark/node_modules/moment/locale/es.js",
+	"./es-do": "./spark/node_modules/moment/locale/es-do.js",
+	"./es-do.js": "./spark/node_modules/moment/locale/es-do.js",
+	"./es-us": "./spark/node_modules/moment/locale/es-us.js",
+	"./es-us.js": "./spark/node_modules/moment/locale/es-us.js",
+	"./es.js": "./spark/node_modules/moment/locale/es.js",
+	"./et": "./spark/node_modules/moment/locale/et.js",
+	"./et.js": "./spark/node_modules/moment/locale/et.js",
+	"./eu": "./spark/node_modules/moment/locale/eu.js",
+	"./eu.js": "./spark/node_modules/moment/locale/eu.js",
+	"./fa": "./spark/node_modules/moment/locale/fa.js",
+	"./fa.js": "./spark/node_modules/moment/locale/fa.js",
+	"./fi": "./spark/node_modules/moment/locale/fi.js",
+	"./fi.js": "./spark/node_modules/moment/locale/fi.js",
+	"./fo": "./spark/node_modules/moment/locale/fo.js",
+	"./fo.js": "./spark/node_modules/moment/locale/fo.js",
+	"./fr": "./spark/node_modules/moment/locale/fr.js",
+	"./fr-ca": "./spark/node_modules/moment/locale/fr-ca.js",
+	"./fr-ca.js": "./spark/node_modules/moment/locale/fr-ca.js",
+	"./fr-ch": "./spark/node_modules/moment/locale/fr-ch.js",
+	"./fr-ch.js": "./spark/node_modules/moment/locale/fr-ch.js",
+	"./fr.js": "./spark/node_modules/moment/locale/fr.js",
+	"./fy": "./spark/node_modules/moment/locale/fy.js",
+	"./fy.js": "./spark/node_modules/moment/locale/fy.js",
+	"./gd": "./spark/node_modules/moment/locale/gd.js",
+	"./gd.js": "./spark/node_modules/moment/locale/gd.js",
+	"./gl": "./spark/node_modules/moment/locale/gl.js",
+	"./gl.js": "./spark/node_modules/moment/locale/gl.js",
+	"./gom-latn": "./spark/node_modules/moment/locale/gom-latn.js",
+	"./gom-latn.js": "./spark/node_modules/moment/locale/gom-latn.js",
+	"./gu": "./spark/node_modules/moment/locale/gu.js",
+	"./gu.js": "./spark/node_modules/moment/locale/gu.js",
+	"./he": "./spark/node_modules/moment/locale/he.js",
+	"./he.js": "./spark/node_modules/moment/locale/he.js",
+	"./hi": "./spark/node_modules/moment/locale/hi.js",
+	"./hi.js": "./spark/node_modules/moment/locale/hi.js",
+	"./hr": "./spark/node_modules/moment/locale/hr.js",
+	"./hr.js": "./spark/node_modules/moment/locale/hr.js",
+	"./hu": "./spark/node_modules/moment/locale/hu.js",
+	"./hu.js": "./spark/node_modules/moment/locale/hu.js",
+	"./hy-am": "./spark/node_modules/moment/locale/hy-am.js",
+	"./hy-am.js": "./spark/node_modules/moment/locale/hy-am.js",
+	"./id": "./spark/node_modules/moment/locale/id.js",
+	"./id.js": "./spark/node_modules/moment/locale/id.js",
+	"./is": "./spark/node_modules/moment/locale/is.js",
+	"./is.js": "./spark/node_modules/moment/locale/is.js",
+	"./it": "./spark/node_modules/moment/locale/it.js",
+	"./it.js": "./spark/node_modules/moment/locale/it.js",
+	"./ja": "./spark/node_modules/moment/locale/ja.js",
+	"./ja.js": "./spark/node_modules/moment/locale/ja.js",
+	"./jv": "./spark/node_modules/moment/locale/jv.js",
+	"./jv.js": "./spark/node_modules/moment/locale/jv.js",
+	"./ka": "./spark/node_modules/moment/locale/ka.js",
+	"./ka.js": "./spark/node_modules/moment/locale/ka.js",
+	"./kk": "./spark/node_modules/moment/locale/kk.js",
+	"./kk.js": "./spark/node_modules/moment/locale/kk.js",
+	"./km": "./spark/node_modules/moment/locale/km.js",
+	"./km.js": "./spark/node_modules/moment/locale/km.js",
+	"./kn": "./spark/node_modules/moment/locale/kn.js",
+	"./kn.js": "./spark/node_modules/moment/locale/kn.js",
+	"./ko": "./spark/node_modules/moment/locale/ko.js",
+	"./ko.js": "./spark/node_modules/moment/locale/ko.js",
+	"./ky": "./spark/node_modules/moment/locale/ky.js",
+	"./ky.js": "./spark/node_modules/moment/locale/ky.js",
+	"./lb": "./spark/node_modules/moment/locale/lb.js",
+	"./lb.js": "./spark/node_modules/moment/locale/lb.js",
+	"./lo": "./spark/node_modules/moment/locale/lo.js",
+	"./lo.js": "./spark/node_modules/moment/locale/lo.js",
+	"./lt": "./spark/node_modules/moment/locale/lt.js",
+	"./lt.js": "./spark/node_modules/moment/locale/lt.js",
+	"./lv": "./spark/node_modules/moment/locale/lv.js",
+	"./lv.js": "./spark/node_modules/moment/locale/lv.js",
+	"./me": "./spark/node_modules/moment/locale/me.js",
+	"./me.js": "./spark/node_modules/moment/locale/me.js",
+	"./mi": "./spark/node_modules/moment/locale/mi.js",
+	"./mi.js": "./spark/node_modules/moment/locale/mi.js",
+	"./mk": "./spark/node_modules/moment/locale/mk.js",
+	"./mk.js": "./spark/node_modules/moment/locale/mk.js",
+	"./ml": "./spark/node_modules/moment/locale/ml.js",
+	"./ml.js": "./spark/node_modules/moment/locale/ml.js",
+	"./mn": "./spark/node_modules/moment/locale/mn.js",
+	"./mn.js": "./spark/node_modules/moment/locale/mn.js",
+	"./mr": "./spark/node_modules/moment/locale/mr.js",
+	"./mr.js": "./spark/node_modules/moment/locale/mr.js",
+	"./ms": "./spark/node_modules/moment/locale/ms.js",
+	"./ms-my": "./spark/node_modules/moment/locale/ms-my.js",
+	"./ms-my.js": "./spark/node_modules/moment/locale/ms-my.js",
+	"./ms.js": "./spark/node_modules/moment/locale/ms.js",
+	"./mt": "./spark/node_modules/moment/locale/mt.js",
+	"./mt.js": "./spark/node_modules/moment/locale/mt.js",
+	"./my": "./spark/node_modules/moment/locale/my.js",
+	"./my.js": "./spark/node_modules/moment/locale/my.js",
+	"./nb": "./spark/node_modules/moment/locale/nb.js",
+	"./nb.js": "./spark/node_modules/moment/locale/nb.js",
+	"./ne": "./spark/node_modules/moment/locale/ne.js",
+	"./ne.js": "./spark/node_modules/moment/locale/ne.js",
+	"./nl": "./spark/node_modules/moment/locale/nl.js",
+	"./nl-be": "./spark/node_modules/moment/locale/nl-be.js",
+	"./nl-be.js": "./spark/node_modules/moment/locale/nl-be.js",
+	"./nl.js": "./spark/node_modules/moment/locale/nl.js",
+	"./nn": "./spark/node_modules/moment/locale/nn.js",
+	"./nn.js": "./spark/node_modules/moment/locale/nn.js",
+	"./pa-in": "./spark/node_modules/moment/locale/pa-in.js",
+	"./pa-in.js": "./spark/node_modules/moment/locale/pa-in.js",
+	"./pl": "./spark/node_modules/moment/locale/pl.js",
+	"./pl.js": "./spark/node_modules/moment/locale/pl.js",
+	"./pt": "./spark/node_modules/moment/locale/pt.js",
+	"./pt-br": "./spark/node_modules/moment/locale/pt-br.js",
+	"./pt-br.js": "./spark/node_modules/moment/locale/pt-br.js",
+	"./pt.js": "./spark/node_modules/moment/locale/pt.js",
+	"./ro": "./spark/node_modules/moment/locale/ro.js",
+	"./ro.js": "./spark/node_modules/moment/locale/ro.js",
+	"./ru": "./spark/node_modules/moment/locale/ru.js",
+	"./ru.js": "./spark/node_modules/moment/locale/ru.js",
+	"./sd": "./spark/node_modules/moment/locale/sd.js",
+	"./sd.js": "./spark/node_modules/moment/locale/sd.js",
+	"./se": "./spark/node_modules/moment/locale/se.js",
+	"./se.js": "./spark/node_modules/moment/locale/se.js",
+	"./si": "./spark/node_modules/moment/locale/si.js",
+	"./si.js": "./spark/node_modules/moment/locale/si.js",
+	"./sk": "./spark/node_modules/moment/locale/sk.js",
+	"./sk.js": "./spark/node_modules/moment/locale/sk.js",
+	"./sl": "./spark/node_modules/moment/locale/sl.js",
+	"./sl.js": "./spark/node_modules/moment/locale/sl.js",
+	"./sq": "./spark/node_modules/moment/locale/sq.js",
+	"./sq.js": "./spark/node_modules/moment/locale/sq.js",
+	"./sr": "./spark/node_modules/moment/locale/sr.js",
+	"./sr-cyrl": "./spark/node_modules/moment/locale/sr-cyrl.js",
+	"./sr-cyrl.js": "./spark/node_modules/moment/locale/sr-cyrl.js",
+	"./sr.js": "./spark/node_modules/moment/locale/sr.js",
+	"./ss": "./spark/node_modules/moment/locale/ss.js",
+	"./ss.js": "./spark/node_modules/moment/locale/ss.js",
+	"./sv": "./spark/node_modules/moment/locale/sv.js",
+	"./sv.js": "./spark/node_modules/moment/locale/sv.js",
+	"./sw": "./spark/node_modules/moment/locale/sw.js",
+	"./sw.js": "./spark/node_modules/moment/locale/sw.js",
+	"./ta": "./spark/node_modules/moment/locale/ta.js",
+	"./ta.js": "./spark/node_modules/moment/locale/ta.js",
+	"./te": "./spark/node_modules/moment/locale/te.js",
+	"./te.js": "./spark/node_modules/moment/locale/te.js",
+	"./tet": "./spark/node_modules/moment/locale/tet.js",
+	"./tet.js": "./spark/node_modules/moment/locale/tet.js",
+	"./tg": "./spark/node_modules/moment/locale/tg.js",
+	"./tg.js": "./spark/node_modules/moment/locale/tg.js",
+	"./th": "./spark/node_modules/moment/locale/th.js",
+	"./th.js": "./spark/node_modules/moment/locale/th.js",
+	"./tl-ph": "./spark/node_modules/moment/locale/tl-ph.js",
+	"./tl-ph.js": "./spark/node_modules/moment/locale/tl-ph.js",
+	"./tlh": "./spark/node_modules/moment/locale/tlh.js",
+	"./tlh.js": "./spark/node_modules/moment/locale/tlh.js",
+	"./tr": "./spark/node_modules/moment/locale/tr.js",
+	"./tr.js": "./spark/node_modules/moment/locale/tr.js",
+	"./tzl": "./spark/node_modules/moment/locale/tzl.js",
+	"./tzl.js": "./spark/node_modules/moment/locale/tzl.js",
+	"./tzm": "./spark/node_modules/moment/locale/tzm.js",
+	"./tzm-latn": "./spark/node_modules/moment/locale/tzm-latn.js",
+	"./tzm-latn.js": "./spark/node_modules/moment/locale/tzm-latn.js",
+	"./tzm.js": "./spark/node_modules/moment/locale/tzm.js",
+	"./ug-cn": "./spark/node_modules/moment/locale/ug-cn.js",
+	"./ug-cn.js": "./spark/node_modules/moment/locale/ug-cn.js",
+	"./uk": "./spark/node_modules/moment/locale/uk.js",
+	"./uk.js": "./spark/node_modules/moment/locale/uk.js",
+	"./ur": "./spark/node_modules/moment/locale/ur.js",
+	"./ur.js": "./spark/node_modules/moment/locale/ur.js",
+	"./uz": "./spark/node_modules/moment/locale/uz.js",
+	"./uz-latn": "./spark/node_modules/moment/locale/uz-latn.js",
+	"./uz-latn.js": "./spark/node_modules/moment/locale/uz-latn.js",
+	"./uz.js": "./spark/node_modules/moment/locale/uz.js",
+	"./vi": "./spark/node_modules/moment/locale/vi.js",
+	"./vi.js": "./spark/node_modules/moment/locale/vi.js",
+	"./x-pseudo": "./spark/node_modules/moment/locale/x-pseudo.js",
+	"./x-pseudo.js": "./spark/node_modules/moment/locale/x-pseudo.js",
+	"./yo": "./spark/node_modules/moment/locale/yo.js",
+	"./yo.js": "./spark/node_modules/moment/locale/yo.js",
+	"./zh-cn": "./spark/node_modules/moment/locale/zh-cn.js",
+	"./zh-cn.js": "./spark/node_modules/moment/locale/zh-cn.js",
+	"./zh-hk": "./spark/node_modules/moment/locale/zh-hk.js",
+	"./zh-hk.js": "./spark/node_modules/moment/locale/zh-hk.js",
+	"./zh-tw": "./spark/node_modules/moment/locale/zh-tw.js",
+	"./zh-tw.js": "./spark/node_modules/moment/locale/zh-tw.js"
 };
 function webpackContext(req) {
 	return __webpack_require__(webpackContextResolve(req));
@@ -33671,17 +34886,17 @@ webpackContext.keys = function webpackContextKeys() {
 };
 webpackContext.resolve = webpackContextResolve;
 module.exports = webpackContext;
-webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
+webpackContext.id = "./spark/node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/af.js":
+/***/ "./spark/node_modules/moment/locale/af.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -33753,13 +34968,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/ar-dz.js":
+/***/ "./spark/node_modules/moment/locale/ar-dz.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -33817,13 +35032,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/ar-kw.js":
+/***/ "./spark/node_modules/moment/locale/ar-kw.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -33881,13 +35096,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/ar-ly.js":
+/***/ "./spark/node_modules/moment/locale/ar-ly.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -34008,13 +35223,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/ar-ma.js":
+/***/ "./spark/node_modules/moment/locale/ar-ma.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -34072,13 +35287,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/ar-sa.js":
+/***/ "./spark/node_modules/moment/locale/ar-sa.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -34181,13 +35396,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/ar-tn.js":
+/***/ "./spark/node_modules/moment/locale/ar-tn.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -34245,13 +35460,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/ar.js":
+/***/ "./spark/node_modules/moment/locale/ar.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -34385,13 +35600,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/az.js":
+/***/ "./spark/node_modules/moment/locale/az.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -34495,13 +35710,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/be.js":
+/***/ "./spark/node_modules/moment/locale/be.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -34632,13 +35847,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/bg.js":
+/***/ "./spark/node_modules/moment/locale/bg.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -34727,13 +35942,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/bm.js":
+/***/ "./spark/node_modules/moment/locale/bm.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -34790,13 +36005,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/bn.js":
+/***/ "./spark/node_modules/moment/locale/bn.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -34914,13 +36129,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/bo.js":
+/***/ "./spark/node_modules/moment/locale/bo.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -35038,13 +36253,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/br.js":
+/***/ "./spark/node_modules/moment/locale/br.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -35151,13 +36366,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/bs.js":
+/***/ "./spark/node_modules/moment/locale/bs.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -35307,13 +36522,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/ca.js":
+/***/ "./spark/node_modules/moment/locale/ca.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -35400,13 +36615,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/cs.js":
+/***/ "./spark/node_modules/moment/locale/cs.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -35584,13 +36799,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/cv.js":
+/***/ "./spark/node_modules/moment/locale/cv.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -35652,13 +36867,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/cy.js":
+/***/ "./spark/node_modules/moment/locale/cy.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -35737,13 +36952,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/da.js":
+/***/ "./spark/node_modules/moment/locale/da.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -35802,13 +37017,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/de-at.js":
+/***/ "./spark/node_modules/moment/locale/de-at.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -35883,13 +37098,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/de-ch.js":
+/***/ "./spark/node_modules/moment/locale/de-ch.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -35964,13 +37179,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/de.js":
+/***/ "./spark/node_modules/moment/locale/de.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -36045,13 +37260,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/dv.js":
+/***/ "./spark/node_modules/moment/locale/dv.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -36149,13 +37364,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/el.js":
+/***/ "./spark/node_modules/moment/locale/el.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -36254,13 +37469,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/en-au.js":
+/***/ "./spark/node_modules/moment/locale/en-au.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -36326,13 +37541,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/en-ca.js":
+/***/ "./spark/node_modules/moment/locale/en-ca.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -36394,13 +37609,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/en-gb.js":
+/***/ "./spark/node_modules/moment/locale/en-gb.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -36466,13 +37681,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/en-ie.js":
+/***/ "./spark/node_modules/moment/locale/en-ie.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -36538,13 +37753,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/en-il.js":
+/***/ "./spark/node_modules/moment/locale/en-il.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -36605,13 +37820,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/en-nz.js":
+/***/ "./spark/node_modules/moment/locale/en-nz.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -36677,13 +37892,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/eo.js":
+/***/ "./spark/node_modules/moment/locale/eo.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -36753,13 +37968,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/es-do.js":
+/***/ "./spark/node_modules/moment/locale/es-do.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -36850,13 +38065,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/es-us.js":
+/***/ "./spark/node_modules/moment/locale/es-us.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -36938,13 +38153,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/es.js":
+/***/ "./spark/node_modules/moment/locale/es.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -37035,13 +38250,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/et.js":
+/***/ "./spark/node_modules/moment/locale/et.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -37120,13 +38335,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/eu.js":
+/***/ "./spark/node_modules/moment/locale/eu.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -37191,13 +38406,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/fa.js":
+/***/ "./spark/node_modules/moment/locale/fa.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -37302,13 +38517,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/fi.js":
+/***/ "./spark/node_modules/moment/locale/fi.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -37416,13 +38631,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/fo.js":
+/***/ "./spark/node_modules/moment/locale/fo.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -37481,13 +38696,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/fr-ca.js":
+/***/ "./spark/node_modules/moment/locale/fr-ca.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -37560,13 +38775,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/fr-ch.js":
+/***/ "./spark/node_modules/moment/locale/fr-ch.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -37643,13 +38858,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/fr.js":
+/***/ "./spark/node_modules/moment/locale/fr.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -37731,13 +38946,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/fy.js":
+/***/ "./spark/node_modules/moment/locale/fy.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -37811,13 +39026,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/gd.js":
+/***/ "./spark/node_modules/moment/locale/gd.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -37892,13 +39107,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/gl.js":
+/***/ "./spark/node_modules/moment/locale/gl.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -37974,13 +39189,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/gom-latn.js":
+/***/ "./spark/node_modules/moment/locale/gom-latn.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -38102,13 +39317,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/gu.js":
+/***/ "./spark/node_modules/moment/locale/gu.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -38231,13 +39446,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/he.js":
+/***/ "./spark/node_modules/moment/locale/he.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -38333,13 +39548,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/hi.js":
+/***/ "./spark/node_modules/moment/locale/hi.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -38462,13 +39677,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/hr.js":
+/***/ "./spark/node_modules/moment/locale/hr.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -38621,13 +39836,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/hu.js":
+/***/ "./spark/node_modules/moment/locale/hu.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -38736,13 +39951,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/hy-am.js":
+/***/ "./spark/node_modules/moment/locale/hy-am.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -38836,13 +40051,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/id.js":
+/***/ "./spark/node_modules/moment/locale/id.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -38923,13 +40138,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/is.js":
+/***/ "./spark/node_modules/moment/locale/is.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -39060,13 +40275,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/it.js":
+/***/ "./spark/node_modules/moment/locale/it.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -39134,13 +40349,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/ja.js":
+/***/ "./spark/node_modules/moment/locale/ja.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -39231,13 +40446,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/jv.js":
+/***/ "./spark/node_modules/moment/locale/jv.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -39318,13 +40533,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/ka.js":
+/***/ "./spark/node_modules/moment/locale/ka.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -39412,13 +40627,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/kk.js":
+/***/ "./spark/node_modules/moment/locale/kk.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -39504,13 +40719,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/km.js":
+/***/ "./spark/node_modules/moment/locale/km.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -39619,13 +40834,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/kn.js":
+/***/ "./spark/node_modules/moment/locale/kn.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -39750,13 +40965,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/ko.js":
+/***/ "./spark/node_modules/moment/locale/ko.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -39836,13 +41051,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/ky.js":
+/***/ "./spark/node_modules/moment/locale/ky.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -39928,13 +41143,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/lb.js":
+/***/ "./spark/node_modules/moment/locale/lb.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -40069,13 +41284,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/lo.js":
+/***/ "./spark/node_modules/moment/locale/lo.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -40144,13 +41359,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/lt.js":
+/***/ "./spark/node_modules/moment/locale/lt.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -40267,13 +41482,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/lv.js":
+/***/ "./spark/node_modules/moment/locale/lv.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -40369,13 +41584,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/me.js":
+/***/ "./spark/node_modules/moment/locale/me.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -40486,13 +41701,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/mi.js":
+/***/ "./spark/node_modules/moment/locale/mi.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -40555,13 +41770,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/mk.js":
+/***/ "./spark/node_modules/moment/locale/mk.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -40650,13 +41865,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/ml.js":
+/***/ "./spark/node_modules/moment/locale/ml.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -40736,13 +41951,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/mn.js":
+/***/ "./spark/node_modules/moment/locale/mn.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -40845,13 +42060,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/mr.js":
+/***/ "./spark/node_modules/moment/locale/mr.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -41010,13 +42225,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/ms-my.js":
+/***/ "./spark/node_modules/moment/locale/ms-my.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -41097,13 +42312,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/ms.js":
+/***/ "./spark/node_modules/moment/locale/ms.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -41184,13 +42399,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/mt.js":
+/***/ "./spark/node_modules/moment/locale/mt.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -41249,13 +42464,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/my.js":
+/***/ "./spark/node_modules/moment/locale/my.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -41347,13 +42562,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/nb.js":
+/***/ "./spark/node_modules/moment/locale/nb.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -41414,13 +42629,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/ne.js":
+/***/ "./spark/node_modules/moment/locale/ne.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -41542,13 +42757,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/nl-be.js":
+/***/ "./spark/node_modules/moment/locale/nl-be.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -41634,13 +42849,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/nl.js":
+/***/ "./spark/node_modules/moment/locale/nl.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -41726,13 +42941,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/nn.js":
+/***/ "./spark/node_modules/moment/locale/nn.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -41791,13 +43006,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/pa-in.js":
+/***/ "./spark/node_modules/moment/locale/pa-in.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -41920,13 +43135,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/pl.js":
+/***/ "./spark/node_modules/moment/locale/pl.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -42051,13 +43266,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/pt-br.js":
+/***/ "./spark/node_modules/moment/locale/pt-br.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -42117,13 +43332,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/pt.js":
+/***/ "./spark/node_modules/moment/locale/pt.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -42187,13 +43402,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/ro.js":
+/***/ "./spark/node_modules/moment/locale/ro.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -42267,13 +43482,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/ru.js":
+/***/ "./spark/node_modules/moment/locale/ru.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -42454,13 +43669,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/sd.js":
+/***/ "./spark/node_modules/moment/locale/sd.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -42557,13 +43772,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/se.js":
+/***/ "./spark/node_modules/moment/locale/se.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -42622,13 +43837,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/si.js":
+/***/ "./spark/node_modules/moment/locale/si.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -42698,13 +43913,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/sk.js":
+/***/ "./spark/node_modules/moment/locale/sk.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -42859,13 +44074,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/sl.js":
+/***/ "./spark/node_modules/moment/locale/sl.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -43037,13 +44252,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/sq.js":
+/***/ "./spark/node_modules/moment/locale/sq.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -43110,13 +44325,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/sr-cyrl.js":
+/***/ "./spark/node_modules/moment/locale/sr-cyrl.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -43226,13 +44441,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/sr.js":
+/***/ "./spark/node_modules/moment/locale/sr.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -43342,13 +44557,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/ss.js":
+/***/ "./spark/node_modules/moment/locale/ss.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -43435,13 +44650,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/sv.js":
+/***/ "./spark/node_modules/moment/locale/sv.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -43509,13 +44724,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/sw.js":
+/***/ "./spark/node_modules/moment/locale/sw.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -43573,13 +44788,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/ta.js":
+/***/ "./spark/node_modules/moment/locale/ta.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -43707,13 +44922,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/te.js":
+/***/ "./spark/node_modules/moment/locale/te.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -43801,13 +45016,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/tet.js":
+/***/ "./spark/node_modules/moment/locale/tet.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -43873,13 +45088,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/tg.js":
+/***/ "./spark/node_modules/moment/locale/tg.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -43994,13 +45209,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/th.js":
+/***/ "./spark/node_modules/moment/locale/th.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -44066,13 +45281,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/tl-ph.js":
+/***/ "./spark/node_modules/moment/locale/tl-ph.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -44133,13 +45348,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/tlh.js":
+/***/ "./spark/node_modules/moment/locale/tlh.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -44260,12 +45475,12 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/tr.js":
+/***/ "./spark/node_modules/moment/locale/tr.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -44359,13 +45574,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/tzl.js":
+/***/ "./spark/node_modules/moment/locale/tzl.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -44455,13 +45670,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/tzm-latn.js":
+/***/ "./spark/node_modules/moment/locale/tzm-latn.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -44518,13 +45733,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/tzm.js":
+/***/ "./spark/node_modules/moment/locale/tzm.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -44581,13 +45796,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/ug-cn.js":
+/***/ "./spark/node_modules/moment/locale/ug-cn.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js language configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -44705,13 +45920,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/uk.js":
+/***/ "./spark/node_modules/moment/locale/uk.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -44861,13 +46076,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/ur.js":
+/***/ "./spark/node_modules/moment/locale/ur.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -44964,13 +46179,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/uz-latn.js":
+/***/ "./spark/node_modules/moment/locale/uz-latn.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -45027,13 +46242,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/uz.js":
+/***/ "./spark/node_modules/moment/locale/uz.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -45090,13 +46305,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/vi.js":
+/***/ "./spark/node_modules/moment/locale/vi.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -45174,13 +46389,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/x-pseudo.js":
+/***/ "./spark/node_modules/moment/locale/x-pseudo.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -45247,13 +46462,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/yo.js":
+/***/ "./spark/node_modules/moment/locale/yo.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -45312,13 +46527,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/zh-cn.js":
+/***/ "./spark/node_modules/moment/locale/zh-cn.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -45427,13 +46642,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/zh-hk.js":
+/***/ "./spark/node_modules/moment/locale/zh-hk.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -45535,13 +46750,13 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/locale/zh-tw.js":
+/***/ "./spark/node_modules/moment/locale/zh-tw.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 //! moment.js locale configuration
 
 ;(function (global, factory) {
-    true ? factory(__webpack_require__("./node_modules/moment/moment.js")) :
+    true ? factory(__webpack_require__("./spark/node_modules/moment/moment.js")) :
    typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, (function (moment) { 'use strict';
@@ -45643,7 +46858,7 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/moment/moment.js":
+/***/ "./spark/node_modules/moment/moment.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(module) {var require;//! moment.js
@@ -47481,7 +48696,7 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
             try {
                 oldLocale = globalLocale._abbr;
                 var aliasedRequire = require;
-                __webpack_require__("./node_modules/moment/locale recursive ^\\.\\/.*$")("./" + name);
+                __webpack_require__("./spark/node_modules/moment/locale recursive ^\\.\\/.*$")("./" + name);
                 getSetGlobalLocale(oldLocale);
             } catch (e) {}
         }
@@ -50157,7 +51372,7 @@ webpackContext.id = "./node_modules/moment/locale recursive ^\\.\\/.*$";
 
 /***/ }),
 
-/***/ "./node_modules/popper.js/dist/esm/popper.js":
+/***/ "./spark/node_modules/popper.js/dist/esm/popper.js":
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -52699,215 +53914,24 @@ Popper.Defaults = Defaults;
 
 /***/ }),
 
-/***/ "./node_modules/process/browser.js":
-/***/ (function(module, exports) {
-
-// shim for using process in browser
-var process = module.exports = {};
-
-// cached from whatever global is present so that test runners that stub it
-// don't break things.  But we need to wrap it in a try catch in case it is
-// wrapped in strict mode code which doesn't define any globals.  It's inside a
-// function because try/catches deoptimize in certain engines.
-
-var cachedSetTimeout;
-var cachedClearTimeout;
-
-function defaultSetTimout() {
-    throw new Error('setTimeout has not been defined');
-}
-function defaultClearTimeout () {
-    throw new Error('clearTimeout has not been defined');
-}
-(function () {
-    try {
-        if (typeof setTimeout === 'function') {
-            cachedSetTimeout = setTimeout;
-        } else {
-            cachedSetTimeout = defaultSetTimout;
-        }
-    } catch (e) {
-        cachedSetTimeout = defaultSetTimout;
-    }
-    try {
-        if (typeof clearTimeout === 'function') {
-            cachedClearTimeout = clearTimeout;
-        } else {
-            cachedClearTimeout = defaultClearTimeout;
-        }
-    } catch (e) {
-        cachedClearTimeout = defaultClearTimeout;
-    }
-} ())
-function runTimeout(fun) {
-    if (cachedSetTimeout === setTimeout) {
-        //normal enviroments in sane situations
-        return setTimeout(fun, 0);
-    }
-    // if setTimeout wasn't available but was latter defined
-    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
-        cachedSetTimeout = setTimeout;
-        return setTimeout(fun, 0);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedSetTimeout(fun, 0);
-    } catch(e){
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
-            return cachedSetTimeout.call(null, fun, 0);
-        } catch(e){
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
-            return cachedSetTimeout.call(this, fun, 0);
-        }
-    }
-
-
-}
-function runClearTimeout(marker) {
-    if (cachedClearTimeout === clearTimeout) {
-        //normal enviroments in sane situations
-        return clearTimeout(marker);
-    }
-    // if clearTimeout wasn't available but was latter defined
-    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
-        cachedClearTimeout = clearTimeout;
-        return clearTimeout(marker);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedClearTimeout(marker);
-    } catch (e){
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
-            return cachedClearTimeout.call(null, marker);
-        } catch (e){
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
-            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
-            return cachedClearTimeout.call(this, marker);
-        }
-    }
-
-
-
-}
-var queue = [];
-var draining = false;
-var currentQueue;
-var queueIndex = -1;
-
-function cleanUpNextTick() {
-    if (!draining || !currentQueue) {
-        return;
-    }
-    draining = false;
-    if (currentQueue.length) {
-        queue = currentQueue.concat(queue);
-    } else {
-        queueIndex = -1;
-    }
-    if (queue.length) {
-        drainQueue();
-    }
-}
-
-function drainQueue() {
-    if (draining) {
-        return;
-    }
-    var timeout = runTimeout(cleanUpNextTick);
-    draining = true;
-
-    var len = queue.length;
-    while(len) {
-        currentQueue = queue;
-        queue = [];
-        while (++queueIndex < len) {
-            if (currentQueue) {
-                currentQueue[queueIndex].run();
-            }
-        }
-        queueIndex = -1;
-        len = queue.length;
-    }
-    currentQueue = null;
-    draining = false;
-    runClearTimeout(timeout);
-}
-
-process.nextTick = function (fun) {
-    var args = new Array(arguments.length - 1);
-    if (arguments.length > 1) {
-        for (var i = 1; i < arguments.length; i++) {
-            args[i - 1] = arguments[i];
-        }
-    }
-    queue.push(new Item(fun, args));
-    if (queue.length === 1 && !draining) {
-        runTimeout(drainQueue);
-    }
-};
-
-// v8 likes predictible objects
-function Item(fun, array) {
-    this.fun = fun;
-    this.array = array;
-}
-Item.prototype.run = function () {
-    this.fun.apply(null, this.array);
-};
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
-process.version = ''; // empty string to avoid regexp issues
-process.versions = {};
-
-function noop() {}
-
-process.on = noop;
-process.addListener = noop;
-process.once = noop;
-process.off = noop;
-process.removeListener = noop;
-process.removeAllListeners = noop;
-process.emit = noop;
-process.prependListener = noop;
-process.prependOnceListener = noop;
-
-process.listeners = function (name) { return [] }
-
-process.binding = function (name) {
-    throw new Error('process.binding is not supported');
-};
-
-process.cwd = function () { return '/' };
-process.chdir = function (dir) {
-    throw new Error('process.chdir is not supported');
-};
-process.umask = function() { return 0; };
-
-
-/***/ }),
-
-/***/ "./node_modules/promise/index.js":
+/***/ "./spark/node_modules/promise/index.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-module.exports = __webpack_require__("./node_modules/promise/lib/index.js")
+module.exports = __webpack_require__("./spark/node_modules/promise/lib/index.js")
 
 
 /***/ }),
 
-/***/ "./node_modules/promise/lib/core.js":
+/***/ "./spark/node_modules/promise/lib/core.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var asap = __webpack_require__("./node_modules/asap/browser-raw.js");
+var asap = __webpack_require__("./spark/node_modules/asap/browser-raw.js");
 
 function noop() {}
 
@@ -53122,13 +54146,13 @@ function doResolve(fn, promise) {
 
 /***/ }),
 
-/***/ "./node_modules/promise/lib/done.js":
+/***/ "./spark/node_modules/promise/lib/done.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var Promise = __webpack_require__("./node_modules/promise/lib/core.js");
+var Promise = __webpack_require__("./spark/node_modules/promise/lib/core.js");
 
 module.exports = Promise;
 Promise.prototype.done = function (onFulfilled, onRejected) {
@@ -53143,7 +54167,7 @@ Promise.prototype.done = function (onFulfilled, onRejected) {
 
 /***/ }),
 
-/***/ "./node_modules/promise/lib/es6-extensions.js":
+/***/ "./spark/node_modules/promise/lib/es6-extensions.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -53151,7 +54175,7 @@ Promise.prototype.done = function (onFulfilled, onRejected) {
 
 //This file contains the ES6 extensions to the core Promises/A+ API
 
-var Promise = __webpack_require__("./node_modules/promise/lib/core.js");
+var Promise = __webpack_require__("./spark/node_modules/promise/lib/core.js");
 
 module.exports = Promise;
 
@@ -53258,13 +54282,13 @@ Promise.prototype['catch'] = function (onRejected) {
 
 /***/ }),
 
-/***/ "./node_modules/promise/lib/finally.js":
+/***/ "./spark/node_modules/promise/lib/finally.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var Promise = __webpack_require__("./node_modules/promise/lib/core.js");
+var Promise = __webpack_require__("./spark/node_modules/promise/lib/core.js");
 
 module.exports = Promise;
 Promise.prototype['finally'] = function (f) {
@@ -53282,23 +54306,23 @@ Promise.prototype['finally'] = function (f) {
 
 /***/ }),
 
-/***/ "./node_modules/promise/lib/index.js":
+/***/ "./spark/node_modules/promise/lib/index.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-module.exports = __webpack_require__("./node_modules/promise/lib/core.js");
-__webpack_require__("./node_modules/promise/lib/done.js");
-__webpack_require__("./node_modules/promise/lib/finally.js");
-__webpack_require__("./node_modules/promise/lib/es6-extensions.js");
-__webpack_require__("./node_modules/promise/lib/node-extensions.js");
-__webpack_require__("./node_modules/promise/lib/synchronous.js");
+module.exports = __webpack_require__("./spark/node_modules/promise/lib/core.js");
+__webpack_require__("./spark/node_modules/promise/lib/done.js");
+__webpack_require__("./spark/node_modules/promise/lib/finally.js");
+__webpack_require__("./spark/node_modules/promise/lib/es6-extensions.js");
+__webpack_require__("./spark/node_modules/promise/lib/node-extensions.js");
+__webpack_require__("./spark/node_modules/promise/lib/synchronous.js");
 
 
 /***/ }),
 
-/***/ "./node_modules/promise/lib/node-extensions.js":
+/***/ "./spark/node_modules/promise/lib/node-extensions.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -53307,8 +54331,8 @@ __webpack_require__("./node_modules/promise/lib/synchronous.js");
 // This file contains then/promise specific extensions that are only useful
 // for node.js interop
 
-var Promise = __webpack_require__("./node_modules/promise/lib/core.js");
-var asap = __webpack_require__("./node_modules/asap/browser-asap.js");
+var Promise = __webpack_require__("./spark/node_modules/promise/lib/core.js");
+var asap = __webpack_require__("./spark/node_modules/asap/browser-asap.js");
 
 module.exports = Promise;
 
@@ -53436,13 +54460,13 @@ Promise.prototype.nodeify = function (callback, ctx) {
 
 /***/ }),
 
-/***/ "./node_modules/promise/lib/synchronous.js":
+/***/ "./spark/node_modules/promise/lib/synchronous.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var Promise = __webpack_require__("./node_modules/promise/lib/core.js");
+var Promise = __webpack_require__("./spark/node_modules/promise/lib/core.js");
 
 module.exports = Promise;
 Promise.enableSynchronous = function () {
@@ -53506,272 +54530,7 @@ Promise.disableSynchronous = function() {
 
 /***/ }),
 
-/***/ "./node_modules/setimmediate/setImmediate.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-/* WEBPACK VAR INJECTION */(function(global, process) {(function (global, undefined) {
-    "use strict";
-
-    if (global.setImmediate) {
-        return;
-    }
-
-    var nextHandle = 1; // Spec says greater than zero
-    var tasksByHandle = {};
-    var currentlyRunningATask = false;
-    var doc = global.document;
-    var registerImmediate;
-
-    function setImmediate(callback) {
-      // Callback can either be a function or a string
-      if (typeof callback !== "function") {
-        callback = new Function("" + callback);
-      }
-      // Copy function arguments
-      var args = new Array(arguments.length - 1);
-      for (var i = 0; i < args.length; i++) {
-          args[i] = arguments[i + 1];
-      }
-      // Store and register the task
-      var task = { callback: callback, args: args };
-      tasksByHandle[nextHandle] = task;
-      registerImmediate(nextHandle);
-      return nextHandle++;
-    }
-
-    function clearImmediate(handle) {
-        delete tasksByHandle[handle];
-    }
-
-    function run(task) {
-        var callback = task.callback;
-        var args = task.args;
-        switch (args.length) {
-        case 0:
-            callback();
-            break;
-        case 1:
-            callback(args[0]);
-            break;
-        case 2:
-            callback(args[0], args[1]);
-            break;
-        case 3:
-            callback(args[0], args[1], args[2]);
-            break;
-        default:
-            callback.apply(undefined, args);
-            break;
-        }
-    }
-
-    function runIfPresent(handle) {
-        // From the spec: "Wait until any invocations of this algorithm started before this one have completed."
-        // So if we're currently running a task, we'll need to delay this invocation.
-        if (currentlyRunningATask) {
-            // Delay by doing a setTimeout. setImmediate was tried instead, but in Firefox 7 it generated a
-            // "too much recursion" error.
-            setTimeout(runIfPresent, 0, handle);
-        } else {
-            var task = tasksByHandle[handle];
-            if (task) {
-                currentlyRunningATask = true;
-                try {
-                    run(task);
-                } finally {
-                    clearImmediate(handle);
-                    currentlyRunningATask = false;
-                }
-            }
-        }
-    }
-
-    function installNextTickImplementation() {
-        registerImmediate = function(handle) {
-            process.nextTick(function () { runIfPresent(handle); });
-        };
-    }
-
-    function canUsePostMessage() {
-        // The test against `importScripts` prevents this implementation from being installed inside a web worker,
-        // where `global.postMessage` means something completely different and can't be used for this purpose.
-        if (global.postMessage && !global.importScripts) {
-            var postMessageIsAsynchronous = true;
-            var oldOnMessage = global.onmessage;
-            global.onmessage = function() {
-                postMessageIsAsynchronous = false;
-            };
-            global.postMessage("", "*");
-            global.onmessage = oldOnMessage;
-            return postMessageIsAsynchronous;
-        }
-    }
-
-    function installPostMessageImplementation() {
-        // Installs an event handler on `global` for the `message` event: see
-        // * https://developer.mozilla.org/en/DOM/window.postMessage
-        // * http://www.whatwg.org/specs/web-apps/current-work/multipage/comms.html#crossDocumentMessages
-
-        var messagePrefix = "setImmediate$" + Math.random() + "$";
-        var onGlobalMessage = function(event) {
-            if (event.source === global &&
-                typeof event.data === "string" &&
-                event.data.indexOf(messagePrefix) === 0) {
-                runIfPresent(+event.data.slice(messagePrefix.length));
-            }
-        };
-
-        if (global.addEventListener) {
-            global.addEventListener("message", onGlobalMessage, false);
-        } else {
-            global.attachEvent("onmessage", onGlobalMessage);
-        }
-
-        registerImmediate = function(handle) {
-            global.postMessage(messagePrefix + handle, "*");
-        };
-    }
-
-    function installMessageChannelImplementation() {
-        var channel = new MessageChannel();
-        channel.port1.onmessage = function(event) {
-            var handle = event.data;
-            runIfPresent(handle);
-        };
-
-        registerImmediate = function(handle) {
-            channel.port2.postMessage(handle);
-        };
-    }
-
-    function installReadyStateChangeImplementation() {
-        var html = doc.documentElement;
-        registerImmediate = function(handle) {
-            // Create a <script> element; its readystatechange event will be fired asynchronously once it is inserted
-            // into the document. Do so, thus queuing up the task. Remember to clean up once it's been called.
-            var script = doc.createElement("script");
-            script.onreadystatechange = function () {
-                runIfPresent(handle);
-                script.onreadystatechange = null;
-                html.removeChild(script);
-                script = null;
-            };
-            html.appendChild(script);
-        };
-    }
-
-    function installSetTimeoutImplementation() {
-        registerImmediate = function(handle) {
-            setTimeout(runIfPresent, 0, handle);
-        };
-    }
-
-    // If supported, we should attach to the prototype of global, since that is where setTimeout et al. live.
-    var attachTo = Object.getPrototypeOf && Object.getPrototypeOf(global);
-    attachTo = attachTo && attachTo.setTimeout ? attachTo : global;
-
-    // Don't get fooled by e.g. browserify environments.
-    if ({}.toString.call(global.process) === "[object process]") {
-        // For Node.js before 0.9
-        installNextTickImplementation();
-
-    } else if (canUsePostMessage()) {
-        // For non-IE10 modern browsers
-        installPostMessageImplementation();
-
-    } else if (global.MessageChannel) {
-        // For web workers, where supported
-        installMessageChannelImplementation();
-
-    } else if (doc && "onreadystatechange" in doc.createElement("script")) {
-        // For IE 6–8
-        installReadyStateChangeImplementation();
-
-    } else {
-        // For older browsers
-        installSetTimeoutImplementation();
-    }
-
-    attachTo.setImmediate = setImmediate;
-    attachTo.clearImmediate = clearImmediate;
-}(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
-
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__("./node_modules/webpack/buildin/global.js"), __webpack_require__("./node_modules/process/browser.js")))
-
-/***/ }),
-
-/***/ "./node_modules/timers-browserify/main.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-/* WEBPACK VAR INJECTION */(function(global) {var scope = (typeof global !== "undefined" && global) ||
-            (typeof self !== "undefined" && self) ||
-            window;
-var apply = Function.prototype.apply;
-
-// DOM APIs, for completeness
-
-exports.setTimeout = function() {
-  return new Timeout(apply.call(setTimeout, scope, arguments), clearTimeout);
-};
-exports.setInterval = function() {
-  return new Timeout(apply.call(setInterval, scope, arguments), clearInterval);
-};
-exports.clearTimeout =
-exports.clearInterval = function(timeout) {
-  if (timeout) {
-    timeout.close();
-  }
-};
-
-function Timeout(id, clearFn) {
-  this._id = id;
-  this._clearFn = clearFn;
-}
-Timeout.prototype.unref = Timeout.prototype.ref = function() {};
-Timeout.prototype.close = function() {
-  this._clearFn.call(scope, this._id);
-};
-
-// Does not start the time, just sets up the members needed.
-exports.enroll = function(item, msecs) {
-  clearTimeout(item._idleTimeoutId);
-  item._idleTimeout = msecs;
-};
-
-exports.unenroll = function(item) {
-  clearTimeout(item._idleTimeoutId);
-  item._idleTimeout = -1;
-};
-
-exports._unrefActive = exports.active = function(item) {
-  clearTimeout(item._idleTimeoutId);
-
-  var msecs = item._idleTimeout;
-  if (msecs >= 0) {
-    item._idleTimeoutId = setTimeout(function onTimeout() {
-      if (item._onTimeout)
-        item._onTimeout();
-    }, msecs);
-  }
-};
-
-// setimmediate attaches itself to the global object
-__webpack_require__("./node_modules/setimmediate/setImmediate.js");
-// On some exotic environments, it's not clear which object `setimmediate` was
-// able to install onto.  Search each possibility in the same order as the
-// `setimmediate` library.
-exports.setImmediate = (typeof self !== "undefined" && self.setImmediate) ||
-                       (typeof global !== "undefined" && global.setImmediate) ||
-                       (this && this.setImmediate);
-exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
-                         (typeof global !== "undefined" && global.clearImmediate) ||
-                         (this && this.clearImmediate);
-
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__("./node_modules/webpack/buildin/global.js")))
-
-/***/ }),
-
-/***/ "./node_modules/urijs/src/IPv6.js":
+/***/ "./spark/node_modules/urijs/src/IPv6.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -53967,7 +54726,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
 
 /***/ }),
 
-/***/ "./node_modules/urijs/src/SecondLevelDomains.js":
+/***/ "./spark/node_modules/urijs/src/SecondLevelDomains.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -54223,7 +54982,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
 
 /***/ }),
 
-/***/ "./node_modules/urijs/src/URI.js":
+/***/ "./spark/node_modules/urijs/src/URI.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -54243,10 +55002,10 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
   // https://github.com/umdjs/umd/blob/master/returnExports.js
   if (typeof module === 'object' && module.exports) {
     // Node
-    module.exports = factory(__webpack_require__("./node_modules/urijs/src/punycode.js"), __webpack_require__("./node_modules/urijs/src/IPv6.js"), __webpack_require__("./node_modules/urijs/src/SecondLevelDomains.js"));
+    module.exports = factory(__webpack_require__("./spark/node_modules/urijs/src/punycode.js"), __webpack_require__("./spark/node_modules/urijs/src/IPv6.js"), __webpack_require__("./spark/node_modules/urijs/src/SecondLevelDomains.js"));
   } else if (true) {
     // AMD. Register as an anonymous module.
-    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__("./node_modules/urijs/src/punycode.js"), __webpack_require__("./node_modules/urijs/src/IPv6.js"), __webpack_require__("./node_modules/urijs/src/SecondLevelDomains.js")], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
+    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__("./spark/node_modules/urijs/src/punycode.js"), __webpack_require__("./spark/node_modules/urijs/src/IPv6.js"), __webpack_require__("./spark/node_modules/urijs/src/SecondLevelDomains.js")], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
 				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
 				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
@@ -56571,7 +57330,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 
 /***/ }),
 
-/***/ "./node_modules/urijs/src/punycode.js":
+/***/ "./spark/node_modules/urijs/src/punycode.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(module, global) {var __WEBPACK_AMD_DEFINE_RESULT__;/*! https://mths.be/punycode v1.4.0 by @mathias */
@@ -57111,7 +57870,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 
 /***/ }),
 
-/***/ "./node_modules/vue/dist/vue.js":
+/***/ "./spark/node_modules/vue/dist/vue.js":
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, setImmediate) {/*!
@@ -68066,765 +68825,6 @@ return Vue;
 
 /***/ }),
 
-/***/ "./node_modules/webpack/buildin/global.js":
-/***/ (function(module, exports) {
-
-var g;
-
-// This works in non-strict mode
-g = (function() {
-	return this;
-})();
-
-try {
-	// This works if eval is allowed (see CSP)
-	g = g || Function("return this")() || (1,eval)("this");
-} catch(e) {
-	// This works if the window reference is available
-	if(typeof window === "object")
-		g = window;
-}
-
-// g can still be undefined, but nothing to do about it...
-// We return undefined, instead of nothing here, so it's
-// easier to handle this case. if(!global) { ...}
-
-module.exports = g;
-
-
-/***/ }),
-
-/***/ "./node_modules/webpack/buildin/module.js":
-/***/ (function(module, exports) {
-
-module.exports = function(module) {
-	if(!module.webpackPolyfill) {
-		module.deprecate = function() {};
-		module.paths = [];
-		// module.parent = undefined by default
-		if(!module.children) module.children = [];
-		Object.defineProperty(module, "loaded", {
-			enumerable: true,
-			get: function() {
-				return module.l;
-			}
-		});
-		Object.defineProperty(module, "id", {
-			enumerable: true,
-			get: function() {
-				return module.i;
-			}
-		});
-		module.webpackPolyfill = 1;
-	}
-	return module;
-};
-
-
-/***/ }),
-
-/***/ "./resources/js/app.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-
-/*
- |--------------------------------------------------------------------------
- | Laravel Spark Bootstrap
- |--------------------------------------------------------------------------
- |
- | First, we will load all of the "core" dependencies for Spark which are
- | libraries such as Vue and jQuery. This also loads the Spark helpers
- | for things such as HTTP calls, forms, and form validation errors.
- |
- | Next, we'll create the root Vue application for Spark. This will start
- | the entire application and attach it to the DOM. Of course, you may
- | customize this script as you desire and load your own components.
- |
- */
-
-__webpack_require__("./spark/resources/assets/js/spark-bootstrap.js");
-
-__webpack_require__("./resources/js/components/bootstrap.js");
-
-var app = new Vue({
-  mixins: [__webpack_require__("./spark/resources/assets/js/spark.js")]
-});
-
-/***/ }),
-
-/***/ "./resources/js/components/bootstrap.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-
-/*
- |--------------------------------------------------------------------------
- | Laravel Spark Components
- |--------------------------------------------------------------------------
- |
- | Here we will load the Spark components which makes up the core client
- | application. This is also a convenient spot for you to load all of
- | your components that you write while building your applications.
- */
-
-__webpack_require__("./resources/js/spark-components/bootstrap.js");
-
-__webpack_require__("./resources/js/components/home.js");
-
-/***/ }),
-
-/***/ "./resources/js/components/home.js":
-/***/ (function(module, exports) {
-
-Vue.component('home', {
-    props: ['user'],
-
-    mounted: function mounted() {
-        //
-    }
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/auth/register-braintree.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/auth/register-braintree.js");
-
-Vue.component('spark-register-braintree', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/auth/register-stripe.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/auth/register-stripe.js");
-
-Vue.component('spark-register-stripe', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/bootstrap.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-
-/**
- * Layout Components...
- */
-__webpack_require__("./resources/js/spark-components/navbar/navbar.js");
-__webpack_require__("./resources/js/spark-components/notifications/notifications.js");
-
-/**
- * Authentication Components...
- */
-__webpack_require__("./resources/js/spark-components/auth/register-stripe.js");
-__webpack_require__("./resources/js/spark-components/auth/register-braintree.js");
-
-/**
- * Settings Component...
- */
-__webpack_require__("./resources/js/spark-components/settings/settings.js");
-
-/**
- * Profile Settings Components...
- */
-__webpack_require__("./resources/js/spark-components/settings/profile.js");
-__webpack_require__("./resources/js/spark-components/settings/profile/update-profile-photo.js");
-__webpack_require__("./resources/js/spark-components/settings/profile/update-contact-information.js");
-
-/**
- * Teams Settings Components...
- */
-__webpack_require__("./resources/js/spark-components/settings/teams.js");
-__webpack_require__("./resources/js/spark-components/settings/teams/create-team.js");
-__webpack_require__("./resources/js/spark-components/settings/teams/pending-invitations.js");
-__webpack_require__("./resources/js/spark-components/settings/teams/current-teams.js");
-__webpack_require__("./resources/js/spark-components/settings/teams/team-settings.js");
-__webpack_require__("./resources/js/spark-components/settings/teams/team-profile.js");
-__webpack_require__("./resources/js/spark-components/settings/teams/update-team-photo.js");
-__webpack_require__("./resources/js/spark-components/settings/teams/update-team-name.js");
-__webpack_require__("./resources/js/spark-components/settings/teams/team-membership.js");
-__webpack_require__("./resources/js/spark-components/settings/teams/send-invitation.js");
-__webpack_require__("./resources/js/spark-components/settings/teams/mailed-invitations.js");
-__webpack_require__("./resources/js/spark-components/settings/teams/team-members.js");
-
-/**
- * Security Settings Components...
- */
-__webpack_require__("./resources/js/spark-components/settings/security.js");
-__webpack_require__("./resources/js/spark-components/settings/security/update-password.js");
-__webpack_require__("./resources/js/spark-components/settings/security/enable-two-factor-auth.js");
-__webpack_require__("./resources/js/spark-components/settings/security/disable-two-factor-auth.js");
-
-/**
- * API Settings Components...
- */
-__webpack_require__("./resources/js/spark-components/settings/api.js");
-__webpack_require__("./resources/js/spark-components/settings/api/create-token.js");
-__webpack_require__("./resources/js/spark-components/settings/api/tokens.js");
-
-/**
- * Subscription Settings Components...
- */
-__webpack_require__("./resources/js/spark-components/settings/subscription.js");
-__webpack_require__("./resources/js/spark-components/settings/subscription/subscribe-stripe.js");
-__webpack_require__("./resources/js/spark-components/settings/subscription/subscribe-braintree.js");
-__webpack_require__("./resources/js/spark-components/settings/subscription/update-subscription.js");
-__webpack_require__("./resources/js/spark-components/settings/subscription/resume-subscription.js");
-__webpack_require__("./resources/js/spark-components/settings/subscription/cancel-subscription.js");
-
-/**
- * Payment Method Components...
- */
-__webpack_require__("./resources/js/spark-components/settings/payment-method-stripe.js");
-__webpack_require__("./resources/js/spark-components/settings/payment-method-braintree.js");
-__webpack_require__("./resources/js/spark-components/settings/payment-method/update-vat-id.js");
-__webpack_require__("./resources/js/spark-components/settings/payment-method/update-payment-method-stripe.js");
-__webpack_require__("./resources/js/spark-components/settings/payment-method/update-payment-method-braintree.js");
-__webpack_require__("./resources/js/spark-components/settings/payment-method/redeem-coupon.js");
-
-/**
- * Billing History Components...
- */
-__webpack_require__("./resources/js/spark-components/settings/invoices.js");
-__webpack_require__("./resources/js/spark-components/settings/invoices/update-extra-billing-information.js");
-__webpack_require__("./resources/js/spark-components/settings/invoices/invoice-list.js");
-
-/**
- * Kiosk Components...
- */
-__webpack_require__("./resources/js/spark-components/kiosk/kiosk.js");
-__webpack_require__("./resources/js/spark-components/kiosk/announcements.js");
-__webpack_require__("./resources/js/spark-components/kiosk/metrics.js");
-__webpack_require__("./resources/js/spark-components/kiosk/users.js");
-__webpack_require__("./resources/js/spark-components/kiosk/profile.js");
-__webpack_require__("./resources/js/spark-components/kiosk/add-discount.js");
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/kiosk/add-discount.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/kiosk/add-discount.js");
-
-Vue.component('spark-kiosk-add-discount', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/kiosk/announcements.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/kiosk/announcements.js");
-
-Vue.component('spark-kiosk-announcements', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/kiosk/kiosk.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/kiosk/kiosk.js");
-
-Vue.component('spark-kiosk', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/kiosk/metrics.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/kiosk/metrics.js");
-
-Vue.component('spark-kiosk-metrics', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/kiosk/profile.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/kiosk/profile.js");
-
-Vue.component('spark-kiosk-profile', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/kiosk/users.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/kiosk/users.js");
-
-Vue.component('spark-kiosk-users', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/navbar/navbar.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/navbar/navbar.js");
-
-Vue.component('spark-navbar', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/notifications/notifications.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/notifications/notifications.js");
-
-Vue.component('spark-notifications', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/settings/api.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/settings/api.js");
-
-Vue.component('spark-api', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/settings/api/create-token.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/settings/api/create-token.js");
-
-Vue.component('spark-create-token', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/settings/api/tokens.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/settings/api/tokens.js");
-
-Vue.component('spark-tokens', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/settings/invoices.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/settings/invoices.js");
-
-Vue.component('spark-invoices', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/settings/invoices/invoice-list.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/settings/invoices/invoice-list.js");
-
-Vue.component('spark-invoice-list', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/settings/invoices/update-extra-billing-information.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/settings/invoices/update-extra-billing-information.js");
-
-Vue.component('spark-update-extra-billing-information', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/settings/payment-method-braintree.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/settings/payment-method-braintree.js");
-
-Vue.component('spark-payment-method-braintree', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/settings/payment-method-stripe.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/settings/payment-method-stripe.js");
-
-Vue.component('spark-payment-method-stripe', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/settings/payment-method/redeem-coupon.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/settings/payment-method/redeem-coupon.js");
-
-Vue.component('spark-redeem-coupon', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/settings/payment-method/update-payment-method-braintree.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/settings/payment-method/update-payment-method-braintree.js");
-
-Vue.component('spark-update-payment-method-braintree', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/settings/payment-method/update-payment-method-stripe.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/settings/payment-method/update-payment-method-stripe.js");
-
-Vue.component('spark-update-payment-method-stripe', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/settings/payment-method/update-vat-id.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/settings/payment-method/update-vat-id.js");
-
-Vue.component('spark-update-vat-id', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/settings/profile.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/settings/profile.js");
-
-Vue.component('spark-profile', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/settings/profile/update-contact-information.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/settings/profile/update-contact-information.js");
-
-Vue.component('spark-update-contact-information', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/settings/profile/update-profile-photo.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/settings/profile/update-profile-photo.js");
-
-Vue.component('spark-update-profile-photo', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/settings/security.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/settings/security.js");
-
-Vue.component('spark-security', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/settings/security/disable-two-factor-auth.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/settings/security/disable-two-factor-auth.js");
-
-Vue.component('spark-disable-two-factor-auth', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/settings/security/enable-two-factor-auth.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/settings/security/enable-two-factor-auth.js");
-
-Vue.component('spark-enable-two-factor-auth', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/settings/security/update-password.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/settings/security/update-password.js");
-
-Vue.component('spark-update-password', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/settings/settings.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/settings/settings.js");
-
-Vue.component('spark-settings', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/settings/subscription.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/settings/subscription.js");
-
-Vue.component('spark-subscription', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/settings/subscription/cancel-subscription.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/settings/subscription/cancel-subscription.js");
-
-Vue.component('spark-cancel-subscription', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/settings/subscription/resume-subscription.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/settings/subscription/resume-subscription.js");
-
-Vue.component('spark-resume-subscription', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/settings/subscription/subscribe-braintree.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/settings/subscription/subscribe-braintree.js");
-
-Vue.component('spark-subscribe-braintree', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/settings/subscription/subscribe-stripe.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/settings/subscription/subscribe-stripe.js");
-
-Vue.component('spark-subscribe-stripe', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/settings/subscription/update-subscription.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/settings/subscription/update-subscription.js");
-
-Vue.component('spark-update-subscription', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/settings/teams.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/settings/teams.js");
-
-Vue.component('spark-teams', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/settings/teams/create-team.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/settings/teams/create-team.js");
-
-Vue.component('spark-create-team', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/settings/teams/current-teams.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/settings/teams/current-teams.js");
-
-Vue.component('spark-current-teams', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/settings/teams/mailed-invitations.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/settings/teams/mailed-invitations.js");
-
-Vue.component('spark-mailed-invitations', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/settings/teams/pending-invitations.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/settings/teams/pending-invitations.js");
-
-Vue.component('spark-pending-invitations', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/settings/teams/send-invitation.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/settings/teams/send-invitation.js");
-
-Vue.component('spark-send-invitation', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/settings/teams/team-members.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/settings/teams/team-members.js");
-
-Vue.component('spark-team-members', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/settings/teams/team-membership.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/settings/teams/team-membership.js");
-
-Vue.component('spark-team-membership', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/settings/teams/team-profile.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/settings/teams/team-profile.js");
-
-Vue.component('spark-team-profile', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/settings/teams/team-settings.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/settings/teams/team-settings.js");
-
-Vue.component('spark-team-settings', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/settings/teams/update-team-name.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/settings/teams/update-team-name.js");
-
-Vue.component('spark-update-team-name', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/js/spark-components/settings/teams/update-team-photo.js":
-/***/ (function(module, exports, __webpack_require__) {
-
-var base = __webpack_require__("./spark/resources/assets/js/settings/teams/update-team-photo.js");
-
-Vue.component('spark-update-team-photo', {
-    mixins: [base]
-});
-
-/***/ }),
-
-/***/ "./resources/sass/app-rtl.scss":
-/***/ (function(module, exports) {
-
-// removed by extract-text-webpack-plugin
-
-/***/ }),
-
-/***/ "./resources/sass/app.scss":
-/***/ (function(module, exports) {
-
-// removed by extract-text-webpack-plugin
-
-/***/ }),
-
 /***/ "./spark/resources/assets/js/auth/register-braintree.js":
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -69372,51 +69372,51 @@ window.SparkFormErrors = function () {
  * SparkForm helper class. Used to set common properties on all forms.
  */
 window.SparkForm = function (data) {
-  var form = this;
+    var form = this;
 
-  $.extend(this, data);
+    $.extend(this, data);
 
-  /**
-   * Create the form error helper instance.
-   */
-  this.errors = new SparkFormErrors();
+    /**
+     * Create the form error helper instance.
+     */
+    this.errors = new SparkFormErrors();
 
-  this.busy = false;
-  this.successful = false;
+    this.busy = false;
+    this.successful = false;
 
-  /**
-   * Start processing the form.
-   */
-  this.startProcessing = function () {
-    form.errors.forget();
-    form.busy = true;
-    form.successful = false;
-  };
+    /**
+     * Start processing the form.
+     */
+    this.startProcessing = function () {
+        form.errors.forget();
+        form.busy = true;
+        form.successful = false;
+    };
 
-  /**
-   * Finish processing the form.
-   */
-  this.finishProcessing = function () {
-    form.busy = false;
-    form.successful = true;
-  };
+    /**
+     * Finish processing the form.
+     */
+    this.finishProcessing = function () {
+        form.busy = false;
+        form.successful = true;
+    };
 
-  /**
-   * Reset the errors and other state for the form.
-   */
-  this.resetStatus = function () {
-    form.errors.forget();
-    form.busy = false;
-    form.successful = false;
-  };
+    /**
+     * Reset the errors and other state for the form.
+     */
+    this.resetStatus = function () {
+        form.errors.forget();
+        form.busy = false;
+        form.successful = false;
+    };
 
-  /**
-   * Set the errors on the form.
-   */
-  this.setErrors = function (errors) {
-    form.busy = false;
-    form.errors.set(errors);
-  };
+    /**
+     * Set the errors on the form.
+     */
+    this.setErrors = function (errors) {
+        form.busy = false;
+        form.errors.set(errors);
+    };
 };
 
 /***/ }),
@@ -73861,12 +73861,12 @@ module.exports = {
 /*
  * Load various JavaScript modules that assist Spark.
  */
-window.URI = __webpack_require__("./node_modules/urijs/src/URI.js");
-window.axios = __webpack_require__("./node_modules/axios/index.js");
-window._ = __webpack_require__("./node_modules/lodash/lodash.js");
-window.moment = __webpack_require__("./node_modules/moment/moment.js");
-window.Promise = __webpack_require__("./node_modules/promise/index.js");
-window.Popper = __webpack_require__("./node_modules/popper.js/dist/esm/popper.js").default;
+window.URI = __webpack_require__("./spark/node_modules/urijs/src/URI.js");
+window.axios = __webpack_require__("./spark/node_modules/axios/index.js");
+window._ = __webpack_require__("./spark/node_modules/lodash/lodash.js");
+window.moment = __webpack_require__("./spark/node_modules/moment/moment.js");
+window.Promise = __webpack_require__("./spark/node_modules/promise/index.js");
+window.Popper = __webpack_require__("./spark/node_modules/popper.js/dist/esm/popper.js").default;
 window.__ = function (key, replace) {
     var translation = Spark.translations[key] ? Spark.translations[key] : key;
 
@@ -73904,10 +73904,10 @@ window.moment.locale('en');
  * Load jQuery and Bootstrap jQuery, used for front-end interaction.
  */
 if (window.$ === undefined || window.jQuery === undefined) {
-    window.$ = window.jQuery = __webpack_require__("./node_modules/jquery/dist/jquery.js");
+    window.$ = window.jQuery = __webpack_require__("./spark/node_modules/jquery/dist/jquery.js");
 }
 
-__webpack_require__("./node_modules/bootstrap/dist/js/bootstrap.js");
+__webpack_require__("./spark/node_modules/bootstrap/dist/js/bootstrap.js");
 
 /**
  * Load Vue if this application is using Vue as its framework.
@@ -74247,7 +74247,7 @@ module.exports = {
  * Load Vue, the JavaScript framework used by Spark.
  */
 if (window.Vue === undefined) {
-  window.Vue = __webpack_require__("./node_modules/vue/dist/vue.js");
+  window.Vue = __webpack_require__("./spark/node_modules/vue/dist/vue.js");
 
   window.Bus = new Vue();
 }

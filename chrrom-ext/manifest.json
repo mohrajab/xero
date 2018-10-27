@@ -10,7 +10,8 @@
     },
     "page_action": {
         "default_icon": "icon-19.png",
-        "default_title": "navigate to invoice generator"
+        "default_title": "navigate to invoice generator",
+        "default_popup": "popup.html"
     },
     "permissions": [
         "declarativeContent",
@@ -19,7 +20,7 @@
         "identity"
     ],
     "icons": {
-        "48": "icon-48.png"
+        "19": "icon-19.png"
     },
     "manifest_version": 2,
     "content_scripts": [
