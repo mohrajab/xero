@@ -5,7 +5,7 @@ namespace PHPSTORM_META {
 
    /**
     * PhpStorm Meta file, to provide autocomplete information for PhpStorm
-    * Generated on 2018-10-29 11:59:26.
+    * Generated on 2018-10-29 17:58:50.
     *
     * @author Barry vd. Heuvel <barryvdh@gmail.com>
     * @see https://github.com/barryvdh/laravel-ide-helper
@@ -60,6 +60,8 @@ namespace PHPSTORM_META {
         'Laravel\Spark\Contracts\Repositories\TeamRepository' => \Laravel\Spark\Repositories\TeamRepository::class,
         'Laravel\Spark\Contracts\Repositories\TokenRepository' => \Laravel\Spark\Repositories\PassportTokenRepository::class,
         'Laravel\Spark\Contracts\Repositories\UserRepository' => \Laravel\Spark\Repositories\UserRepository::class,
+        'League\OAuth2\Server\AuthorizationServer' => \League\OAuth2\Server\AuthorizationServer::class,
+        'League\OAuth2\Server\ResourceServer' => \League\OAuth2\Server\ResourceServer::class,
         'NunoMaduro\Collision\Contracts\Adapters\Phpunit\Listener' => \NunoMaduro\Collision\Adapters\Phpunit\Listener::class,
         'NunoMaduro\Collision\Contracts\Provider' => \NunoMaduro\Collision\Provider::class,
         'Psr\Http\Message\ResponseInterface' => \Zend\Diactoros\Response::class,
@@ -238,6 +240,8 @@ namespace PHPSTORM_META {
         'Laravel\Spark\Contracts\Repositories\TeamRepository' => \Laravel\Spark\Repositories\TeamRepository::class,
         'Laravel\Spark\Contracts\Repositories\TokenRepository' => \Laravel\Spark\Repositories\PassportTokenRepository::class,
         'Laravel\Spark\Contracts\Repositories\UserRepository' => \Laravel\Spark\Repositories\UserRepository::class,
+        'League\OAuth2\Server\AuthorizationServer' => \League\OAuth2\Server\AuthorizationServer::class,
+        'League\OAuth2\Server\ResourceServer' => \League\OAuth2\Server\ResourceServer::class,
         'NunoMaduro\Collision\Contracts\Adapters\Phpunit\Listener' => \NunoMaduro\Collision\Adapters\Phpunit\Listener::class,
         'NunoMaduro\Collision\Contracts\Provider' => \NunoMaduro\Collision\Provider::class,
         'Psr\Http\Message\ResponseInterface' => \Zend\Diactoros\Response::class,
@@ -416,6 +420,8 @@ namespace PHPSTORM_META {
         'Laravel\Spark\Contracts\Repositories\TeamRepository' => \Laravel\Spark\Repositories\TeamRepository::class,
         'Laravel\Spark\Contracts\Repositories\TokenRepository' => \Laravel\Spark\Repositories\PassportTokenRepository::class,
         'Laravel\Spark\Contracts\Repositories\UserRepository' => \Laravel\Spark\Repositories\UserRepository::class,
+        'League\OAuth2\Server\AuthorizationServer' => \League\OAuth2\Server\AuthorizationServer::class,
+        'League\OAuth2\Server\ResourceServer' => \League\OAuth2\Server\ResourceServer::class,
         'NunoMaduro\Collision\Contracts\Adapters\Phpunit\Listener' => \NunoMaduro\Collision\Adapters\Phpunit\Listener::class,
         'NunoMaduro\Collision\Contracts\Provider' => \NunoMaduro\Collision\Provider::class,
         'Psr\Http\Message\ResponseInterface' => \Zend\Diactoros\Response::class,
@@ -594,6 +600,8 @@ namespace PHPSTORM_META {
         'Laravel\Spark\Contracts\Repositories\TeamRepository' => \Laravel\Spark\Repositories\TeamRepository::class,
         'Laravel\Spark\Contracts\Repositories\TokenRepository' => \Laravel\Spark\Repositories\PassportTokenRepository::class,
         'Laravel\Spark\Contracts\Repositories\UserRepository' => \Laravel\Spark\Repositories\UserRepository::class,
+        'League\OAuth2\Server\AuthorizationServer' => \League\OAuth2\Server\AuthorizationServer::class,
+        'League\OAuth2\Server\ResourceServer' => \League\OAuth2\Server\ResourceServer::class,
         'NunoMaduro\Collision\Contracts\Adapters\Phpunit\Listener' => \NunoMaduro\Collision\Adapters\Phpunit\Listener::class,
         'NunoMaduro\Collision\Contracts\Provider' => \NunoMaduro\Collision\Provider::class,
         'Psr\Http\Message\ResponseInterface' => \Zend\Diactoros\Response::class,
@@ -772,6 +780,8 @@ namespace PHPSTORM_META {
         'Laravel\Spark\Contracts\Repositories\TeamRepository' => \Laravel\Spark\Repositories\TeamRepository::class,
         'Laravel\Spark\Contracts\Repositories\TokenRepository' => \Laravel\Spark\Repositories\PassportTokenRepository::class,
         'Laravel\Spark\Contracts\Repositories\UserRepository' => \Laravel\Spark\Repositories\UserRepository::class,
+        'League\OAuth2\Server\AuthorizationServer' => \League\OAuth2\Server\AuthorizationServer::class,
+        'League\OAuth2\Server\ResourceServer' => \League\OAuth2\Server\ResourceServer::class,
         'NunoMaduro\Collision\Contracts\Adapters\Phpunit\Listener' => \NunoMaduro\Collision\Adapters\Phpunit\Listener::class,
         'NunoMaduro\Collision\Contracts\Provider' => \NunoMaduro\Collision\Provider::class,
         'Psr\Http\Message\ResponseInterface' => \Zend\Diactoros\Response::class,
@@ -950,6 +960,8 @@ namespace PHPSTORM_META {
         'Laravel\Spark\Contracts\Repositories\TeamRepository' => \Laravel\Spark\Repositories\TeamRepository::class,
         'Laravel\Spark\Contracts\Repositories\TokenRepository' => \Laravel\Spark\Repositories\PassportTokenRepository::class,
         'Laravel\Spark\Contracts\Repositories\UserRepository' => \Laravel\Spark\Repositories\UserRepository::class,
+        'League\OAuth2\Server\AuthorizationServer' => \League\OAuth2\Server\AuthorizationServer::class,
+        'League\OAuth2\Server\ResourceServer' => \League\OAuth2\Server\ResourceServer::class,
         'NunoMaduro\Collision\Contracts\Adapters\Phpunit\Listener' => \NunoMaduro\Collision\Adapters\Phpunit\Listener::class,
         'NunoMaduro\Collision\Contracts\Provider' => \NunoMaduro\Collision\Provider::class,
         'Psr\Http\Message\ResponseInterface' => \Zend\Diactoros\Response::class,
@@ -1128,6 +1140,8 @@ namespace PHPSTORM_META {
         'Laravel\Spark\Contracts\Repositories\TeamRepository' => \Laravel\Spark\Repositories\TeamRepository::class,
         'Laravel\Spark\Contracts\Repositories\TokenRepository' => \Laravel\Spark\Repositories\PassportTokenRepository::class,
         'Laravel\Spark\Contracts\Repositories\UserRepository' => \Laravel\Spark\Repositories\UserRepository::class,
+        'League\OAuth2\Server\AuthorizationServer' => \League\OAuth2\Server\AuthorizationServer::class,
+        'League\OAuth2\Server\ResourceServer' => \League\OAuth2\Server\ResourceServer::class,
         'NunoMaduro\Collision\Contracts\Adapters\Phpunit\Listener' => \NunoMaduro\Collision\Adapters\Phpunit\Listener::class,
         'NunoMaduro\Collision\Contracts\Provider' => \NunoMaduro\Collision\Provider::class,
         'Psr\Http\Message\ResponseInterface' => \Zend\Diactoros\Response::class,

@@ -12,8 +12,9 @@
 */
 
 Route::group([
-    'middleware' => 'auth:api'
+    'middleware' => ['api', 'auth:api']
 ], function () {
-    Route::get('/data', 'UserController@show');
+    Route::get('/user', 'UserController@show');
 });
 
+Route::get('/services', 'UserController@services');

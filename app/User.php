@@ -2,6 +2,7 @@
 
 namespace App;
 
+use Laravel\Passport\HasApiTokens;
 use Laravel\Spark\CanJoinTeams;
 use Laravel\Spark\User as SparkUser;
 
@@ -75,11 +76,12 @@ use Laravel\Spark\User as SparkUser;
  * @method static \Illuminate\Database\Eloquent\Builder|\App\User whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|\App\User whereUsesTwoFactorAuth($value)
  * @method static \Illuminate\Dat0.abase\Eloquent\Builder|\App\User whereVatId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\User whereVatId($value)
  */
 class User extends SparkUser
 {
     use CanJoinTeams;
-
+    use HasApiTokens;
     /**
      * The attributes that are mass assignable.
      *

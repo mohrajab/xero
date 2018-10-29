@@ -47,5 +47,7 @@ Route::get('/callback', function (\Illuminate\Http\Request $request) {
         ],
     ]);
 
-    return response(["auth" => json_decode((string)$response->getBody(), true)]);
+    return response(["data" => [
+        "auth" => json_decode((string)$response->getBody(), true)
+    ]]);
 });

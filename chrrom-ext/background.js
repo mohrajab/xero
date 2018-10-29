@@ -15,8 +15,9 @@ chrome.runtime.onInstalled.addListener(function () {
 });
 
 
+/*
 chrome.pageAction.onClicked.addListener(function (tab) {
-    /*    chrome.identity.getAuthToken({interactive: false}, function (token) {
+    /!*    chrome.identity.getAuthToken({interactive: false}, function (token) {
             if (!token) {
                 if (chrome.runtime.lastError.message.match(/not signed in/)) {
                     alert("not singed in");
@@ -27,21 +28,14 @@ chrome.pageAction.onClicked.addListener(function (tab) {
                     });
                 }
             }
-        });*/
+        });*!/
 
 
-    chrome.identity.launchWebAuthFlow(
-        {'url': 'http://localhost:8000/token', 'interactive': true},
-        function (redirect_url) {
-            /!* Extract token from redirect_url *!/
-            alert(redirect_url);
-        });
-
-
-    /*
+    /!*
     var url = new URL(tab.url);
     var id = url.searchParams.get("InvoiceID");
     var newURL = "http://localhost:8000/invoice/" + id;
 
-    chrome.tabs.create({url: newURL});*/
+    chrome.tabs.create({url: newURL});*!/
 });
+*/
