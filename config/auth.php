@@ -43,7 +43,11 @@ return [
 
         'api' => [
             'driver' => 'spark',
+            'provider' => 'users',
         ],
+        /*'api' => [
+            'driver' => 'spark',
+        ],*/
     ],
 
     /*

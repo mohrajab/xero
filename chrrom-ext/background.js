@@ -3,8 +3,9 @@ chrome.runtime.onInstalled.addListener(function () {
         chrome.declarativeContent.onPageChanged.addRules([
             {
                 conditions: [
-                    new chrome.declarativeContent.PageStateMatcher({/*
-                        pageUrl: {urlContains: 'xero'},*/
+                    new chrome.declarativeContent.PageStateMatcher({
+                        /*
+                                                pageUrl: {urlContains: 'xero'},*/
                     })
                 ],
                 actions: [new chrome.declarativeContent.ShowPageAction()]
@@ -27,14 +28,20 @@ chrome.pageAction.onClicked.addListener(function (tab) {
                 }
             }
         });*/
-    /* chrome.identity.launchWebAuthFlow(
-         {'url': 'https://go.xero.com/Dashboard/', 'interactive': true},
-         function (redirect_url) { /!* Extract token from redirect_url *!/
-             alert(redirect_url);
-         });*/
+
+
+    chrome.identity.launchWebAuthFlow(
+        {'url': 'http://localhost:8000/token', 'interactive': true},
+        function (redirect_url) {
+            /!* Extract token from redirect_url *!/
+            alert(redirect_url);
+        });
+
+
+    /*
     var url = new URL(tab.url);
     var id = url.searchParams.get("InvoiceID");
     var newURL = "http://localhost:8000/invoice/" + id;
 
-    chrome.tabs.create({url: newURL});
+    chrome.tabs.create({url: newURL});*/
 });

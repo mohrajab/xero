@@ -74,7 +74,7 @@ use Laravel\Spark\User as SparkUser;
  * @method static \Illuminate\Database\Eloquent\Builder|\App\User whereTwoFactorResetCode($value)
  * @method static \Illuminate\Database\Eloquent\Builder|\App\User whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|\App\User whereUsesTwoFactorAuth($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\User whereVatId($value)
+ * @method static \Illuminate\Dat0.abase\Eloquent\Builder|\App\User whereVatId($value)
  */
 class User extends SparkUser
 {

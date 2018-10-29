@@ -9,4 +9,3 @@ e.innerHTML = button;
 var elementx = document.getElementById("ext-gen26");
 elementx.querySelector("ul").appendChild(e);
 
-

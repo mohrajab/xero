@@ -17,7 +17,9 @@
         "declarativeContent",
         "tabs",
         "activeTab",
-        "identity"
+        "identity",
+        "http://localhost/xero/public/*",
+        "storage"
     ],
     "icons": {
         "19": "icon-19.png"
