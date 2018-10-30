@@ -11,11 +11,14 @@ class UserController extends Controller
     {
         $user = \Auth::user();
         $user->current_points = "0/0";
-        if (auth()->user()->subscription())
-            $user->current_points = auth()->user()->points()->where('subscription_id', auth()->user()->subscription()->id)->sum('points') . "/" . (auth()->user()->sparkPlan((auth()->user()->subscription()->name)))->__get('points');
+        $user->current_active = "personal";
+        if ($user->subscription())
+            $user->current_points = $user->points()->where('subscription_id', $user->subscription()->id)->sum('points') . "/" . ($user->sparkPlan(($user->subscription()->name)))->__get('points');
 
-        if (auth()->user()->currentTeam() && auth()->user()->currentTeam()->subscription())
-            $user->current_points = auth()->user()->currentTeam()->points()->where('subscription_team_id', auth()->user()->currentTeam()->subscription()->id)->sum('points') . "/" . (auth()->user()->currentTeam()->sparkPlan((auth()->user()->currentTeam()->subscription()->name)))->__get('points');
+        if ($user->currentTeam() && $user->currentTeam()->subscription()) {
+            $user->current_points = $user->currentTeam()->points()->where('subscription_team_id', $user->currentTeam()->subscription()->id)->sum('points') . "/" . ($user->currentTeam()->sparkPlan(($user->currentTeam()->subscription()->name)))->__get('points');
+            $user->current_active = $user->currentTeam()->name;
+        }
 
         return response(["data" => \Auth::user()]);
     }
