@@ -4,7 +4,8 @@ chrome.runtime.onInstalled.addListener(function () {
             {
                 conditions: [
                     new chrome.declarativeContent.PageStateMatcher({
-                        pageUrl: {urlContains: 'xero'},
+                        /*
+                                                pageUrl: {urlContains: 'xero'},*/
                     })
                 ],
                 actions: [new chrome.declarativeContent.ShowPageAction()]
@@ -14,8 +15,9 @@ chrome.runtime.onInstalled.addListener(function () {
 });
 
 
+/*
 chrome.pageAction.onClicked.addListener(function (tab) {
-    /*    chrome.identity.getAuthToken({interactive: false}, function (token) {
+    /!*    chrome.identity.getAuthToken({interactive: false}, function (token) {
             if (!token) {
                 if (chrome.runtime.lastError.message.match(/not signed in/)) {
                     alert("not singed in");
@@ -26,15 +28,14 @@ chrome.pageAction.onClicked.addListener(function (tab) {
                     });
                 }
             }
-        });*/
-    /* chrome.identity.launchWebAuthFlow(
-         {'url': 'https://go.xero.com/Dashboard/', 'interactive': true},
-         function (redirect_url) { /!* Extract token from redirect_url *!/
-             alert(redirect_url);
-         });*/
+        });*!/
+
+
+    /!*
     var url = new URL(tab.url);
     var id = url.searchParams.get("InvoiceID");
     var newURL = "http://xero-test.tk/invoice/" + id;
 
-    chrome.tabs.create({url: newURL});
+    chrome.tabs.create({url: newURL});*!/
 });
+*/
