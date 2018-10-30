@@ -19,7 +19,12 @@
                             @endif
                             @if(auth()->user()->currentTeam())
                                 <p>{{ __('Your Active Team (:team) used Subscription Points:',['team'=>auth()->user()->currentTeam()->name]) }}
-                                    <span style="color:orange">{{ auth()->user()->currentTeam()->points()->where('subscription_team_id', auth()->user()->currentTeam()->subscription()->id)->sum('points') }}</span>/{{ (auth()->user()->currentTeam()->sparkPlan((auth()->user()->currentTeam()->subscription()->name)))->__get('points') }}
+                                    @if(auth()->user()->currentTeam()->subscription())
+                                        <span style="color:orange">{{ auth()->user()->currentTeam()->points()->where('subscription_team_id', auth()->user()->currentTeam()->subscription()->id)->sum('points') }}</span>
+                                        /{{ (auth()->user()->currentTeam()->sparkPlan((auth()->user()->currentTeam()->subscription()->name)))->__get('points') }}
+                                    @else
+                                        <span style="color:orange">0/0</span>
+                                    @endif
                                 </p>
                             @endif
                         </div>
