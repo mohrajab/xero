@@ -5,13 +5,14 @@ namespace PHPSTORM_META {
 
    /**
     * PhpStorm Meta file, to provide autocomplete information for PhpStorm
-    * Generated on 2018-10-29 17:58:50.
+    * Generated on 2018-10-30 14:14:55.
     *
     * @author Barry vd. Heuvel <barryvdh@gmail.com>
     * @see https://github.com/barryvdh/laravel-ide-helper
     */
     override(new \Illuminate\Contracts\Container\Container, map([
         '' => '@',
+        'Asm89\Stack\CorsService' => \Asm89\Stack\CorsService::class,
         'Illuminate\Broadcasting\BroadcastManager' => \Illuminate\Broadcasting\BroadcastManager::class,
         'Illuminate\Bus\Dispatcher' => \Illuminate\Bus\Dispatcher::class,
         'Illuminate\Console\Scheduling\Schedule' => \Illuminate\Console\Scheduling\Schedule::class,
@@ -38,6 +39,7 @@ namespace PHPSTORM_META {
         'Laravel\Spark\Contracts\Interactions\Settings\PaymentMethod\RedeemCoupon' => \Laravel\Spark\Interactions\Settings\PaymentMethod\RedeemStripeCoupon::class,
         'Laravel\Spark\Contracts\Interactions\Settings\PaymentMethod\UpdatePaymentMethod' => \Laravel\Spark\Interactions\Settings\PaymentMethod\UpdateStripePaymentMethod::class,
         'Laravel\Spark\Contracts\Interactions\Settings\Profile\UpdateContactInformation' => \Laravel\Spark\Interactions\Settings\Profile\UpdateContactInformation::class,
+        'Laravel\Spark\Contracts\Interactions\Settings\Profile\UpdateDefaultTemplate' => \Laravel\Spark\Interactions\Settings\Profile\UpdateDefaultTemplate::class,
         'Laravel\Spark\Contracts\Interactions\Settings\Profile\UpdateProfilePhoto' => \Laravel\Spark\Interactions\Settings\Profile\UpdateProfilePhoto::class,
         'Laravel\Spark\Contracts\Interactions\Settings\Security\DisableTwoFactorAuth' => \Laravel\Spark\Interactions\Settings\Security\DisableTwoFactorAuthUsingAuthy::class,
         'Laravel\Spark\Contracts\Interactions\Settings\Security\EnableTwoFactorAuth' => \Laravel\Spark\Interactions\Settings\Security\EnableTwoFactorAuthUsingAuthy::class,
@@ -60,8 +62,6 @@ namespace PHPSTORM_META {
         'Laravel\Spark\Contracts\Repositories\TeamRepository' => \Laravel\Spark\Repositories\TeamRepository::class,
         'Laravel\Spark\Contracts\Repositories\TokenRepository' => \Laravel\Spark\Repositories\PassportTokenRepository::class,
         'Laravel\Spark\Contracts\Repositories\UserRepository' => \Laravel\Spark\Repositories\UserRepository::class,
-        'League\OAuth2\Server\AuthorizationServer' => \League\OAuth2\Server\AuthorizationServer::class,
-        'League\OAuth2\Server\ResourceServer' => \League\OAuth2\Server\ResourceServer::class,
         'NunoMaduro\Collision\Contracts\Adapters\Phpunit\Listener' => \NunoMaduro\Collision\Adapters\Phpunit\Listener::class,
         'NunoMaduro\Collision\Contracts\Provider' => \NunoMaduro\Collision\Provider::class,
         'Psr\Http\Message\ResponseInterface' => \Zend\Diactoros\Response::class,
@@ -154,7 +154,7 @@ namespace PHPSTORM_META {
         'composer' => \Illuminate\Support\Composer::class,
         'cookie' => \Illuminate\Cookie\CookieJar::class,
         'db' => \Illuminate\Database\DatabaseManager::class,
-        'db.connection' => \Illuminate\Database\PostgresConnection::class,
+        'db.connection' => \Illuminate\Database\MySqlConnection::class,
         'db.factory' => \Illuminate\Database\Connectors\ConnectionFactory::class,
         'encrypter' => \Illuminate\Encryption\Encrypter::class,
         'events' => \Illuminate\Events\Dispatcher::class,
@@ -192,6 +192,7 @@ namespace PHPSTORM_META {
     ]));
     override(\Illuminate\Contracts\Container\Container::make(0), map([
         '' => '@',
+        'Asm89\Stack\CorsService' => \Asm89\Stack\CorsService::class,
         'Illuminate\Broadcasting\BroadcastManager' => \Illuminate\Broadcasting\BroadcastManager::class,
         'Illuminate\Bus\Dispatcher' => \Illuminate\Bus\Dispatcher::class,
         'Illuminate\Console\Scheduling\Schedule' => \Illuminate\Console\Scheduling\Schedule::class,
@@ -218,6 +219,7 @@ namespace PHPSTORM_META {
         'Laravel\Spark\Contracts\Interactions\Settings\PaymentMethod\RedeemCoupon' => \Laravel\Spark\Interactions\Settings\PaymentMethod\RedeemStripeCoupon::class,
         'Laravel\Spark\Contracts\Interactions\Settings\PaymentMethod\UpdatePaymentMethod' => \Laravel\Spark\Interactions\Settings\PaymentMethod\UpdateStripePaymentMethod::class,
         'Laravel\Spark\Contracts\Interactions\Settings\Profile\UpdateContactInformation' => \Laravel\Spark\Interactions\Settings\Profile\UpdateContactInformation::class,
+        'Laravel\Spark\Contracts\Interactions\Settings\Profile\UpdateDefaultTemplate' => \Laravel\Spark\Interactions\Settings\Profile\UpdateDefaultTemplate::class,
         'Laravel\Spark\Contracts\Interactions\Settings\Profile\UpdateProfilePhoto' => \Laravel\Spark\Interactions\Settings\Profile\UpdateProfilePhoto::class,
         'Laravel\Spark\Contracts\Interactions\Settings\Security\DisableTwoFactorAuth' => \Laravel\Spark\Interactions\Settings\Security\DisableTwoFactorAuthUsingAuthy::class,
         'Laravel\Spark\Contracts\Interactions\Settings\Security\EnableTwoFactorAuth' => \Laravel\Spark\Interactions\Settings\Security\EnableTwoFactorAuthUsingAuthy::class,
@@ -240,8 +242,6 @@ namespace PHPSTORM_META {
         'Laravel\Spark\Contracts\Repositories\TeamRepository' => \Laravel\Spark\Repositories\TeamRepository::class,
         'Laravel\Spark\Contracts\Repositories\TokenRepository' => \Laravel\Spark\Repositories\PassportTokenRepository::class,
         'Laravel\Spark\Contracts\Repositories\UserRepository' => \Laravel\Spark\Repositories\UserRepository::class,
-        'League\OAuth2\Server\AuthorizationServer' => \League\OAuth2\Server\AuthorizationServer::class,
-        'League\OAuth2\Server\ResourceServer' => \League\OAuth2\Server\ResourceServer::class,
         'NunoMaduro\Collision\Contracts\Adapters\Phpunit\Listener' => \NunoMaduro\Collision\Adapters\Phpunit\Listener::class,
         'NunoMaduro\Collision\Contracts\Provider' => \NunoMaduro\Collision\Provider::class,
         'Psr\Http\Message\ResponseInterface' => \Zend\Diactoros\Response::class,
@@ -334,7 +334,7 @@ namespace PHPSTORM_META {
         'composer' => \Illuminate\Support\Composer::class,
         'cookie' => \Illuminate\Cookie\CookieJar::class,
         'db' => \Illuminate\Database\DatabaseManager::class,
-        'db.connection' => \Illuminate\Database\PostgresConnection::class,
+        'db.connection' => \Illuminate\Database\MySqlConnection::class,
         'db.factory' => \Illuminate\Database\Connectors\ConnectionFactory::class,
         'encrypter' => \Illuminate\Encryption\Encrypter::class,
         'events' => \Illuminate\Events\Dispatcher::class,
@@ -372,6 +372,7 @@ namespace PHPSTORM_META {
     ]));
     override(\Illuminate\Contracts\Container\Container::makeWith(0), map([
         '' => '@',
+        'Asm89\Stack\CorsService' => \Asm89\Stack\CorsService::class,
         'Illuminate\Broadcasting\BroadcastManager' => \Illuminate\Broadcasting\BroadcastManager::class,
         'Illuminate\Bus\Dispatcher' => \Illuminate\Bus\Dispatcher::class,
         'Illuminate\Console\Scheduling\Schedule' => \Illuminate\Console\Scheduling\Schedule::class,
@@ -398,6 +399,7 @@ namespace PHPSTORM_META {
         'Laravel\Spark\Contracts\Interactions\Settings\PaymentMethod\RedeemCoupon' => \Laravel\Spark\Interactions\Settings\PaymentMethod\RedeemStripeCoupon::class,
         'Laravel\Spark\Contracts\Interactions\Settings\PaymentMethod\UpdatePaymentMethod' => \Laravel\Spark\Interactions\Settings\PaymentMethod\UpdateStripePaymentMethod::class,
         'Laravel\Spark\Contracts\Interactions\Settings\Profile\UpdateContactInformation' => \Laravel\Spark\Interactions\Settings\Profile\UpdateContactInformation::class,
+        'Laravel\Spark\Contracts\Interactions\Settings\Profile\UpdateDefaultTemplate' => \Laravel\Spark\Interactions\Settings\Profile\UpdateDefaultTemplate::class,
         'Laravel\Spark\Contracts\Interactions\Settings\Profile\UpdateProfilePhoto' => \Laravel\Spark\Interactions\Settings\Profile\UpdateProfilePhoto::class,
         'Laravel\Spark\Contracts\Interactions\Settings\Security\DisableTwoFactorAuth' => \Laravel\Spark\Interactions\Settings\Security\DisableTwoFactorAuthUsingAuthy::class,
         'Laravel\Spark\Contracts\Interactions\Settings\Security\EnableTwoFactorAuth' => \Laravel\Spark\Interactions\Settings\Security\EnableTwoFactorAuthUsingAuthy::class,
@@ -420,8 +422,6 @@ namespace PHPSTORM_META {
         'Laravel\Spark\Contracts\Repositories\TeamRepository' => \Laravel\Spark\Repositories\TeamRepository::class,
         'Laravel\Spark\Contracts\Repositories\TokenRepository' => \Laravel\Spark\Repositories\PassportTokenRepository::class,
         'Laravel\Spark\Contracts\Repositories\UserRepository' => \Laravel\Spark\Repositories\UserRepository::class,
-        'League\OAuth2\Server\AuthorizationServer' => \League\OAuth2\Server\AuthorizationServer::class,
-        'League\OAuth2\Server\ResourceServer' => \League\OAuth2\Server\ResourceServer::class,
         'NunoMaduro\Collision\Contracts\Adapters\Phpunit\Listener' => \NunoMaduro\Collision\Adapters\Phpunit\Listener::class,
         'NunoMaduro\Collision\Contracts\Provider' => \NunoMaduro\Collision\Provider::class,
         'Psr\Http\Message\ResponseInterface' => \Zend\Diactoros\Response::class,
@@ -514,7 +514,7 @@ namespace PHPSTORM_META {
         'composer' => \Illuminate\Support\Composer::class,
         'cookie' => \Illuminate\Cookie\CookieJar::class,
         'db' => \Illuminate\Database\DatabaseManager::class,
-        'db.connection' => \Illuminate\Database\PostgresConnection::class,
+        'db.connection' => \Illuminate\Database\MySqlConnection::class,
         'db.factory' => \Illuminate\Database\Connectors\ConnectionFactory::class,
         'encrypter' => \Illuminate\Encryption\Encrypter::class,
         'events' => \Illuminate\Events\Dispatcher::class,
@@ -552,6 +552,7 @@ namespace PHPSTORM_META {
     ]));
     override(\App::make(0), map([
         '' => '@',
+        'Asm89\Stack\CorsService' => \Asm89\Stack\CorsService::class,
         'Illuminate\Broadcasting\BroadcastManager' => \Illuminate\Broadcasting\BroadcastManager::class,
         'Illuminate\Bus\Dispatcher' => \Illuminate\Bus\Dispatcher::class,
         'Illuminate\Console\Scheduling\Schedule' => \Illuminate\Console\Scheduling\Schedule::class,
@@ -578,6 +579,7 @@ namespace PHPSTORM_META {
         'Laravel\Spark\Contracts\Interactions\Settings\PaymentMethod\RedeemCoupon' => \Laravel\Spark\Interactions\Settings\PaymentMethod\RedeemStripeCoupon::class,
         'Laravel\Spark\Contracts\Interactions\Settings\PaymentMethod\UpdatePaymentMethod' => \Laravel\Spark\Interactions\Settings\PaymentMethod\UpdateStripePaymentMethod::class,
         'Laravel\Spark\Contracts\Interactions\Settings\Profile\UpdateContactInformation' => \Laravel\Spark\Interactions\Settings\Profile\UpdateContactInformation::class,
+        'Laravel\Spark\Contracts\Interactions\Settings\Profile\UpdateDefaultTemplate' => \Laravel\Spark\Interactions\Settings\Profile\UpdateDefaultTemplate::class,
         'Laravel\Spark\Contracts\Interactions\Settings\Profile\UpdateProfilePhoto' => \Laravel\Spark\Interactions\Settings\Profile\UpdateProfilePhoto::class,
         'Laravel\Spark\Contracts\Interactions\Settings\Security\DisableTwoFactorAuth' => \Laravel\Spark\Interactions\Settings\Security\DisableTwoFactorAuthUsingAuthy::class,
         'Laravel\Spark\Contracts\Interactions\Settings\Security\EnableTwoFactorAuth' => \Laravel\Spark\Interactions\Settings\Security\EnableTwoFactorAuthUsingAuthy::class,
@@ -600,8 +602,6 @@ namespace PHPSTORM_META {
         'Laravel\Spark\Contracts\Repositories\TeamRepository' => \Laravel\Spark\Repositories\TeamRepository::class,
         'Laravel\Spark\Contracts\Repositories\TokenRepository' => \Laravel\Spark\Repositories\PassportTokenRepository::class,
         'Laravel\Spark\Contracts\Repositories\UserRepository' => \Laravel\Spark\Repositories\UserRepository::class,
-        'League\OAuth2\Server\AuthorizationServer' => \League\OAuth2\Server\AuthorizationServer::class,
-        'League\OAuth2\Server\ResourceServer' => \League\OAuth2\Server\ResourceServer::class,
         'NunoMaduro\Collision\Contracts\Adapters\Phpunit\Listener' => \NunoMaduro\Collision\Adapters\Phpunit\Listener::class,
         'NunoMaduro\Collision\Contracts\Provider' => \NunoMaduro\Collision\Provider::class,
         'Psr\Http\Message\ResponseInterface' => \Zend\Diactoros\Response::class,
@@ -694,7 +694,7 @@ namespace PHPSTORM_META {
         'composer' => \Illuminate\Support\Composer::class,
         'cookie' => \Illuminate\Cookie\CookieJar::class,
         'db' => \Illuminate\Database\DatabaseManager::class,
-        'db.connection' => \Illuminate\Database\PostgresConnection::class,
+        'db.connection' => \Illuminate\Database\MySqlConnection::class,
         'db.factory' => \Illuminate\Database\Connectors\ConnectionFactory::class,
         'encrypter' => \Illuminate\Encryption\Encrypter::class,
         'events' => \Illuminate\Events\Dispatcher::class,
@@ -732,6 +732,7 @@ namespace PHPSTORM_META {
     ]));
     override(\App::makeWith(0), map([
         '' => '@',
+        'Asm89\Stack\CorsService' => \Asm89\Stack\CorsService::class,
         'Illuminate\Broadcasting\BroadcastManager' => \Illuminate\Broadcasting\BroadcastManager::class,
         'Illuminate\Bus\Dispatcher' => \Illuminate\Bus\Dispatcher::class,
         'Illuminate\Console\Scheduling\Schedule' => \Illuminate\Console\Scheduling\Schedule::class,
@@ -758,6 +759,7 @@ namespace PHPSTORM_META {
         'Laravel\Spark\Contracts\Interactions\Settings\PaymentMethod\RedeemCoupon' => \Laravel\Spark\Interactions\Settings\PaymentMethod\RedeemStripeCoupon::class,
         'Laravel\Spark\Contracts\Interactions\Settings\PaymentMethod\UpdatePaymentMethod' => \Laravel\Spark\Interactions\Settings\PaymentMethod\UpdateStripePaymentMethod::class,
         'Laravel\Spark\Contracts\Interactions\Settings\Profile\UpdateContactInformation' => \Laravel\Spark\Interactions\Settings\Profile\UpdateContactInformation::class,
+        'Laravel\Spark\Contracts\Interactions\Settings\Profile\UpdateDefaultTemplate' => \Laravel\Spark\Interactions\Settings\Profile\UpdateDefaultTemplate::class,
         'Laravel\Spark\Contracts\Interactions\Settings\Profile\UpdateProfilePhoto' => \Laravel\Spark\Interactions\Settings\Profile\UpdateProfilePhoto::class,
         'Laravel\Spark\Contracts\Interactions\Settings\Security\DisableTwoFactorAuth' => \Laravel\Spark\Interactions\Settings\Security\DisableTwoFactorAuthUsingAuthy::class,
         'Laravel\Spark\Contracts\Interactions\Settings\Security\EnableTwoFactorAuth' => \Laravel\Spark\Interactions\Settings\Security\EnableTwoFactorAuthUsingAuthy::class,
@@ -780,8 +782,6 @@ namespace PHPSTORM_META {
         'Laravel\Spark\Contracts\Repositories\TeamRepository' => \Laravel\Spark\Repositories\TeamRepository::class,
         'Laravel\Spark\Contracts\Repositories\TokenRepository' => \Laravel\Spark\Repositories\PassportTokenRepository::class,
         'Laravel\Spark\Contracts\Repositories\UserRepository' => \Laravel\Spark\Repositories\UserRepository::class,
-        'League\OAuth2\Server\AuthorizationServer' => \League\OAuth2\Server\AuthorizationServer::class,
-        'League\OAuth2\Server\ResourceServer' => \League\OAuth2\Server\ResourceServer::class,
         'NunoMaduro\Collision\Contracts\Adapters\Phpunit\Listener' => \NunoMaduro\Collision\Adapters\Phpunit\Listener::class,
         'NunoMaduro\Collision\Contracts\Provider' => \NunoMaduro\Collision\Provider::class,
         'Psr\Http\Message\ResponseInterface' => \Zend\Diactoros\Response::class,
@@ -874,7 +874,7 @@ namespace PHPSTORM_META {
         'composer' => \Illuminate\Support\Composer::class,
         'cookie' => \Illuminate\Cookie\CookieJar::class,
         'db' => \Illuminate\Database\DatabaseManager::class,
-        'db.connection' => \Illuminate\Database\PostgresConnection::class,
+        'db.connection' => \Illuminate\Database\MySqlConnection::class,
         'db.factory' => \Illuminate\Database\Connectors\ConnectionFactory::class,
         'encrypter' => \Illuminate\Encryption\Encrypter::class,
         'events' => \Illuminate\Events\Dispatcher::class,
@@ -912,6 +912,7 @@ namespace PHPSTORM_META {
     ]));
     override(\app(0), map([
         '' => '@',
+        'Asm89\Stack\CorsService' => \Asm89\Stack\CorsService::class,
         'Illuminate\Broadcasting\BroadcastManager' => \Illuminate\Broadcasting\BroadcastManager::class,
         'Illuminate\Bus\Dispatcher' => \Illuminate\Bus\Dispatcher::class,
         'Illuminate\Console\Scheduling\Schedule' => \Illuminate\Console\Scheduling\Schedule::class,
@@ -938,6 +939,7 @@ namespace PHPSTORM_META {
         'Laravel\Spark\Contracts\Interactions\Settings\PaymentMethod\RedeemCoupon' => \Laravel\Spark\Interactions\Settings\PaymentMethod\RedeemStripeCoupon::class,
         'Laravel\Spark\Contracts\Interactions\Settings\PaymentMethod\UpdatePaymentMethod' => \Laravel\Spark\Interactions\Settings\PaymentMethod\UpdateStripePaymentMethod::class,
         'Laravel\Spark\Contracts\Interactions\Settings\Profile\UpdateContactInformation' => \Laravel\Spark\Interactions\Settings\Profile\UpdateContactInformation::class,
+        'Laravel\Spark\Contracts\Interactions\Settings\Profile\UpdateDefaultTemplate' => \Laravel\Spark\Interactions\Settings\Profile\UpdateDefaultTemplate::class,
         'Laravel\Spark\Contracts\Interactions\Settings\Profile\UpdateProfilePhoto' => \Laravel\Spark\Interactions\Settings\Profile\UpdateProfilePhoto::class,
         'Laravel\Spark\Contracts\Interactions\Settings\Security\DisableTwoFactorAuth' => \Laravel\Spark\Interactions\Settings\Security\DisableTwoFactorAuthUsingAuthy::class,
         'Laravel\Spark\Contracts\Interactions\Settings\Security\EnableTwoFactorAuth' => \Laravel\Spark\Interactions\Settings\Security\EnableTwoFactorAuthUsingAuthy::class,
@@ -960,8 +962,6 @@ namespace PHPSTORM_META {
         'Laravel\Spark\Contracts\Repositories\TeamRepository' => \Laravel\Spark\Repositories\TeamRepository::class,
         'Laravel\Spark\Contracts\Repositories\TokenRepository' => \Laravel\Spark\Repositories\PassportTokenRepository::class,
         'Laravel\Spark\Contracts\Repositories\UserRepository' => \Laravel\Spark\Repositories\UserRepository::class,
-        'League\OAuth2\Server\AuthorizationServer' => \League\OAuth2\Server\AuthorizationServer::class,
-        'League\OAuth2\Server\ResourceServer' => \League\OAuth2\Server\ResourceServer::class,
         'NunoMaduro\Collision\Contracts\Adapters\Phpunit\Listener' => \NunoMaduro\Collision\Adapters\Phpunit\Listener::class,
         'NunoMaduro\Collision\Contracts\Provider' => \NunoMaduro\Collision\Provider::class,
         'Psr\Http\Message\ResponseInterface' => \Zend\Diactoros\Response::class,
@@ -1054,7 +1054,7 @@ namespace PHPSTORM_META {
         'composer' => \Illuminate\Support\Composer::class,
         'cookie' => \Illuminate\Cookie\CookieJar::class,
         'db' => \Illuminate\Database\DatabaseManager::class,
-        'db.connection' => \Illuminate\Database\PostgresConnection::class,
+        'db.connection' => \Illuminate\Database\MySqlConnection::class,
         'db.factory' => \Illuminate\Database\Connectors\ConnectionFactory::class,
         'encrypter' => \Illuminate\Encryption\Encrypter::class,
         'events' => \Illuminate\Events\Dispatcher::class,
@@ -1092,6 +1092,7 @@ namespace PHPSTORM_META {
     ]));
     override(\resolve(0), map([
         '' => '@',
+        'Asm89\Stack\CorsService' => \Asm89\Stack\CorsService::class,
         'Illuminate\Broadcasting\BroadcastManager' => \Illuminate\Broadcasting\BroadcastManager::class,
         'Illuminate\Bus\Dispatcher' => \Illuminate\Bus\Dispatcher::class,
         'Illuminate\Console\Scheduling\Schedule' => \Illuminate\Console\Scheduling\Schedule::class,
@@ -1118,6 +1119,7 @@ namespace PHPSTORM_META {
         'Laravel\Spark\Contracts\Interactions\Settings\PaymentMethod\RedeemCoupon' => \Laravel\Spark\Interactions\Settings\PaymentMethod\RedeemStripeCoupon::class,
         'Laravel\Spark\Contracts\Interactions\Settings\PaymentMethod\UpdatePaymentMethod' => \Laravel\Spark\Interactions\Settings\PaymentMethod\UpdateStripePaymentMethod::class,
         'Laravel\Spark\Contracts\Interactions\Settings\Profile\UpdateContactInformation' => \Laravel\Spark\Interactions\Settings\Profile\UpdateContactInformation::class,
+        'Laravel\Spark\Contracts\Interactions\Settings\Profile\UpdateDefaultTemplate' => \Laravel\Spark\Interactions\Settings\Profile\UpdateDefaultTemplate::class,
         'Laravel\Spark\Contracts\Interactions\Settings\Profile\UpdateProfilePhoto' => \Laravel\Spark\Interactions\Settings\Profile\UpdateProfilePhoto::class,
         'Laravel\Spark\Contracts\Interactions\Settings\Security\DisableTwoFactorAuth' => \Laravel\Spark\Interactions\Settings\Security\DisableTwoFactorAuthUsingAuthy::class,
         'Laravel\Spark\Contracts\Interactions\Settings\Security\EnableTwoFactorAuth' => \Laravel\Spark\Interactions\Settings\Security\EnableTwoFactorAuthUsingAuthy::class,
@@ -1140,8 +1142,6 @@ namespace PHPSTORM_META {
         'Laravel\Spark\Contracts\Repositories\TeamRepository' => \Laravel\Spark\Repositories\TeamRepository::class,
         'Laravel\Spark\Contracts\Repositories\TokenRepository' => \Laravel\Spark\Repositories\PassportTokenRepository::class,
         'Laravel\Spark\Contracts\Repositories\UserRepository' => \Laravel\Spark\Repositories\UserRepository::class,
-        'League\OAuth2\Server\AuthorizationServer' => \League\OAuth2\Server\AuthorizationServer::class,
-        'League\OAuth2\Server\ResourceServer' => \League\OAuth2\Server\ResourceServer::class,
         'NunoMaduro\Collision\Contracts\Adapters\Phpunit\Listener' => \NunoMaduro\Collision\Adapters\Phpunit\Listener::class,
         'NunoMaduro\Collision\Contracts\Provider' => \NunoMaduro\Collision\Provider::class,
         'Psr\Http\Message\ResponseInterface' => \Zend\Diactoros\Response::class,
@@ -1234,7 +1234,7 @@ namespace PHPSTORM_META {
         'composer' => \Illuminate\Support\Composer::class,
         'cookie' => \Illuminate\Cookie\CookieJar::class,
         'db' => \Illuminate\Database\DatabaseManager::class,
-        'db.connection' => \Illuminate\Database\PostgresConnection::class,
+        'db.connection' => \Illuminate\Database\MySqlConnection::class,
         'db.factory' => \Illuminate\Database\Connectors\ConnectionFactory::class,
         'encrypter' => \Illuminate\Encryption\Encrypter::class,
         'events' => \Illuminate\Events\Dispatcher::class,

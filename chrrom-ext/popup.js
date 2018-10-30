@@ -1,7 +1,7 @@
 const CLIENT_ID = '3';
-const CLIENT_SECRET = 'sOndrYNyZtpkh4TmbGLLqqwJwZHbqc8VNH2kAG9A';
+const CLIENT_SECRET = 'xooutbW09WseDn8JAoniMzzZSXxGuDwuHoZNVyfL';
 const REDIRECT_URL = chrome.identity.getRedirectURL('token');
-const SERVER_URL = 'http://localhost/xero/public';
+const SERVER_URL = "http://xero-test.tk";
 const REQUEST_CODE_URL = SERVER_URL + '/redirect' + '?client_id=' + CLIENT_ID + '&redirect_uri=' + REDIRECT_URL;
 const REQUEST_TOKEN_URL = SERVER_URL + '/callback' + '?client_id=' + CLIENT_ID + '&client_secret=' + CLIENT_SECRET + '&redirect_uri=' + REDIRECT_URL;
 let TOKEN = undefined;
