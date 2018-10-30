@@ -146,7 +146,7 @@ function setAuthedView() {
             <div class="col-xs-5 name">
                <div style="margin-left: 15px;">
                 <label>${user.name}</label>
-                <span><span>60 Pts</span> and within 5 days</span>
+                <span><span>${user.current_points}</span>
 </div>
             </div>
             <div class="col-xs-3"></div>
