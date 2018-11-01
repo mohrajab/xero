@@ -3,7 +3,7 @@
 
 /**
  * A helper file for Laravel 5, to provide autocomplete information to your IDE
- * Generated for Laravel 5.7.11 on 2018-10-30 14:14:55.
+ * Generated for Laravel 5.7.12 on 2018-11-01 14:47:11.
  *
  * This file should not be included in your code, only analyzed by your IDE!
  *
@@ -2679,6 +2679,18 @@ namespace Illuminate\Support\Facades {
         }
         
         /**
+         * Unset the given driver instances.
+         *
+         * @param array|string|null $name
+         * @return $this 
+         * @static 
+         */ 
+        public static function forgetDriver($name = null)
+        {
+            return \Illuminate\Cache\CacheManager::forgetDriver($name);
+        }
+        
+        /**
          * Register a custom driver creator Closure.
          *
          * @param string $driver
@@ -4894,6 +4906,19 @@ namespace Illuminate\Support\Facades {
         public static function put($path, $contents, $lock = false)
         {
             return \Illuminate\Filesystem\Filesystem::put($path, $contents, $lock);
+        }
+        
+        /**
+         * Write the contents of a file, replacing it atomically if it already exists.
+         *
+         * @param string $path
+         * @param string $content
+         * @return void 
+         * @static 
+         */ 
+        public static function replace($path, $content)
+        {
+            \Illuminate\Filesystem\Filesystem::replace($path, $content);
         }
         
         /**
@@ -12391,12 +12416,13 @@ namespace Illuminate\Support\Facades {
          * Determine if the given request has a valid signature.
          *
          * @param \Illuminate\Http\Request $request
+         * @param bool $absolute
          * @return bool 
          * @static 
          */ 
-        public static function hasValidSignature($request)
+        public static function hasValidSignature($request, $absolute = true)
         {
-            return \Illuminate\Routing\UrlGenerator::hasValidSignature($request);
+            return \Illuminate\Routing\UrlGenerator::hasValidSignature($request, $absolute);
         }
         
         /**
@@ -13651,6 +13677,18 @@ namespace Intervention\Image\Facades {
         {
             return \Intervention\Image\ImageManager::cache($callback, $lifetime, $returnObj);
         }
+         
+    }
+ 
+}
+
+namespace Laravel\Nova { 
+
+    /**
+     * 
+     *
+     */ 
+    class Nova {
          
     }
  
@@ -16619,6 +16657,8 @@ namespace  {
     class View extends \Illuminate\Support\Facades\View {}
 
     class Image extends \Intervention\Image\Facades\Image {}
+
+    class Nova extends \Laravel\Nova\Nova {}
 
     class XeroPrivate extends \PulkitJalan\Xero\Facades\XeroPrivate {}
 

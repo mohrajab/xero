@@ -18,8 +18,10 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Service whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Service wherePoints($value)
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Service whereUpdatedAt($value)
+ * @property string|null $image
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Service whereImage($value)
  */
 class Service extends Model
 {
-    protected $fillable = ["name", "points"];
+    protected $fillable = ["name", "points", "image"];
 }

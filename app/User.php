@@ -77,6 +77,9 @@ use Laravel\Spark\User as SparkUser;
  * @method static \Illuminate\Database\Eloquent\Builder|\App\User whereUsesTwoFactorAuth($value)
  * @method static \Illuminate\Dat0.abase\Eloquent\Builder|\App\User whereVatId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|\App\User whereVatId($value)
+ * @property string|null $default_template
+ * @property-read \Illuminate\Database\Eloquent\Collection|\Laravel\Passport\Client[] $clients
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\User whereDefaultTemplate($value)
  */
 class User extends SparkUser
 {
@@ -90,6 +93,7 @@ class User extends SparkUser
     protected $fillable = [
         'name',
         'email',
+        'is_admin'
     ];
 
     /**
