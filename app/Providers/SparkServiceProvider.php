@@ -34,7 +34,8 @@ class SparkServiceProvider extends ServiceProvider
      */
     protected $developers = [
         'mohammed.r.rajab@gmail.com',
-        'devmsh87@gmail.com'
+        'devmsh87@gmail.com',
+        'moh.rajab@dce.sa'
     ];
 
     /**

@@ -61,8 +61,6 @@
 </head>
 <body>
 
-<div id="preloader"></div>
-
 <div id="wrapper">
     @include('theme.layout.header')
 

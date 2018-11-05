@@ -8,17 +8,58 @@
 
     <title>@yield('title', config('app.name'))</title>
 
-    <!-- Fonts -->
-    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300,400,600' rel='stylesheet' type='text/css'>
-    <link href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css' rel='stylesheet' type='text/css'>
+{{--<!-- Fonts -->
+<link href='https://fonts.googleapis.com/css?family=Open+Sans:300,400,600' rel='stylesheet' type='text/css'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css' rel='stylesheet' type='text/css'>--}}
 
-    <!-- CSS -->
+<!-- CSS -->
+
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" type="image/x-icon" href="/theme/img/logo.png">
+
+    <!-- Normalize CSS -->
+    <link rel="stylesheet" href="/theme/css/normalize.css">
+
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="/theme/css/main.css">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="/theme/css/bootstrap.min.css">
+
+    <!-- Animate CSS -->
+    <link rel="stylesheet" href="/theme/css/animate.min.css">
+
+    <!-- Font-awesome CSS-->
+    <link rel="stylesheet" href="/theme/css/font-awesome.min.css">
+
+    <!-- Owl Caousel CSS -->
+    <link rel="stylesheet" href="/theme/vendor/OwlCarousel/owl.carousel.min.css">
+    <link rel="stylesheet" href="/theme/vendor/OwlCarousel/owl.theme.default.min.css">
+
+    <!-- Main Menu CSS -->
+    <link rel="stylesheet" href="/theme/css/meanmenu.min.css">
+
+    <!-- Datetime Picker Style CSS -->
+    <link rel="stylesheet" href="/theme/css/jquery.datetimepicker.css">
+
+    <!-- ReImageGrid CSS -->
+    <link rel="stylesheet" href="/theme/css/reImageGrid.css">
+
+    <!-- Switch Style CSS -->
+    <link rel="stylesheet" href="/theme/css/hover-min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/theme/style.css">
+
     <link href="{{ mix(Spark::usesRightToLeftTheme() ? 'css/app-rtl.css' : 'css/app.css') }}" rel="stylesheet">
+    <!-- Modernizr Js -->
+    <script src="/theme/js/modernizr-2.8.3.min.js"></script>
 
     <!-- Scripts -->
-    @yield('scripts', '')
+@yield('scripts', '')
 
-    <!-- Global Spark Object -->
+<!-- Global Spark Object -->
     <script>
         window.Spark = <?php echo json_encode(array_merge(
             Spark::scriptVariables(), []
@@ -26,15 +67,16 @@
     </script>
 </head>
 <body>
+<div id="wrapper">
     <div id="spark-app" v-cloak>
         <!-- Navigation -->
-        @if (Auth::check())
-            @include('spark::nav.user')
-        @else
-            @include('spark::nav.guest')
-        @endif
+    @if (Auth::check())
+        @include('spark::nav.user')
+    @else
+        @include('spark::nav.guest')
+    @endif
 
-        <!-- Main Content -->
+    <!-- Main Content -->
         <main class="py-4">
             @yield('content')
         </main>
@@ -47,8 +89,45 @@
         @endif
     </div>
 
-    <!-- JavaScript -->
-    <script src="{{ mix('js/app.js') }}"></script>
-    <script src="/js/sweetalert.min.js"></script>
+    @include('theme.layout.footer')
+</div>
+
+<!-- JavaScript -->
+<script src="{{ mix('js/app.js') }}"></script>
+<script src="/js/sweetalert.min.js"></script>
+
+<!-- jquery-->
+<script src="/theme/js/jquery-2.2.4.min.js" type="text/javascript"></script>
+
+<!-- Plugins js -->
+<script src="/theme/js/plugins.js" type="text/javascript"></script>
+
+<!-- Bootstrap js -->
+<script src="/theme/js/bootstrap.min.js" type="text/javascript"></script>
+
+<!-- WOW JS -->
+<script src="/theme/js/wow.min.js"></script>
+
+<!-- Owl Cauosel JS -->
+<script src="/theme/vendor/OwlCarousel/owl.carousel.min.js" type="text/javascript"></script>
+
+<!-- Meanmenu Js -->
+<script src="/theme/js/jquery.meanmenu.min.js" type="text/javascript"></script>
+
+<!-- Srollup js -->
+<script src="/theme/js/jquery.scrollUp.min.js" type="text/javascript"></script>
+
+<!-- jquery.counterup js -->
+<script src="/theme/js/jquery.counterup.min.js"></script>
+<script src="/theme/js/waypoints.min.js"></script>
+
+<!-- Isotope js -->
+<script src="/theme/js/isotope.pkgd.min.js" type="text/javascript"></script>
+
+<!-- Gridrotator js -->
+<script src="/theme/js/jquery.gridrotator.js" type="text/javascript"></script>
+
+<!-- Custom Js -->
+<script src="/theme/js/main.js" type="text/javascript"></script>
 </body>
 </html>
