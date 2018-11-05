@@ -3300,6 +3300,12 @@ textarea.StripeElement {
 
 .form-check-label {
   margin-bottom: 0;
+  margin-left: 20px;
+}
+
+.form-check-label input {
+  margin-bottom: 0;
+  margin-left: -20px;
 }
 
 .form-check-inline {

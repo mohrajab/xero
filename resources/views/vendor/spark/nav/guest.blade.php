@@ -1,44 +1,127 @@
-<nav class="navbar navbar-light navbar-expand-md navbar-spark">
-    <div class="container">
-        <a class="navbar-brand" href="#">
-            <svg class="h-37 w-auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 43" xmlns:xlink="http://www.w3.org/1999/xlink">
-                <defs>
-                    <path id="a" d="M22 2.5c4-3.8 6.7-2.4 6 3.2l-1.5 10h4.2c5.5 0 6.7 3.2 2.6 7L14 40.7c-4 3.7-6.7 2.3-6-3.3l1.5-10H5.3c-5.5 0-6.7-3-2.6-7L22 2.4z"/>
-                    <linearGradient id="b" x1="59.1%" x2="88.7%" y1="55.6%" y2="100%">
-                        <stop stop-color="#F1C476" offset="0%"/>
-                        <stop stop-color="#CC973B" offset="100%"/>
-                    </linearGradient>
-                    <linearGradient id="d" x1="11.3%" x2="40.9%" y1="0%" y2="44.4%">
-                        <stop stop-color="#CC973B" offset="0%"/>
-                        <stop stop-color="#F1C476" offset="100%"/>
-                    </linearGradient>
-                </defs>
-                <g fill="none" fill-rule="evenodd">
-                    <path fill="#F1C476" d="M16 8.4c7.3-7 12.3-4.4 10.8 5.7l-.2 2c7.8 0 8 5.7.6 12.7l-7 6.5c-7.5 7-12.4 4.5-11-5.7l.3-1.8c-7.8 0-8-5.7-.7-12.6l7-6.5z"/>
-                    <g transform="translate(.037 .147)">
-                        <mask id="c" fill="#fff">
-                            <use xlink:href="#a"/>
-                        </mask>
-                        <use fill="#F1C476" xlink:href="#a"/>
-                        <path fill="url(#b)" d="M3.8-1.5h25.6v17.3H3.8" mask="url(#c)"/>
-                        <path fill="url(#d)" d="M6.6 27.3h25.6v17.3H6.6z" mask="url(#c)"/>
-                    </g>
-                </g>
-            </svg>
-        </a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
-                aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div id="navbarSupportedContent" class="collapse navbar-collapse">
-            <ul class="navbar-nav ml-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="/login">{{__('Login')}}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/register">{{__('Register')}}</a>
-                </li>
-            </ul>
+<header>
+    <div id="header" class="header2-area right-nav-mobile">
+        <div class="header-top-bar">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-2 col-md-2 col-sm-2 hidden-xs">
+                        <div class="logo-area">
+                            <a href="/"><img width="60" class="img-responsive" src="/theme/img/logo.png" alt="logo"></a>
+                        </div>
+                    </div>
+                    <div class="col-lg-10 col-md-10 col-sm-10 col-xs-12">
+                        <ul class="profile-notification">
+                            <li>
+                                <div class="notify-contact"><span>Need help?</span> Talk to an expert: +61 3 8376
+                                    6284
+                                </div>
+                            </li>
+
+                            @if(!Auth::check())
+                                <li>
+                                    <div class="apply-btn-area">
+                                        <a class="apply-now-btn" href="/login" id="login-button1">Login</a>
+                                    </div>
+                                </li>
+                                <li><a class="apply-now-btn-color hidden-on-mobile"
+                                       href="/register">Register</a></li>
+                            @else
+                                <li>
+                                    <div class="notify-notification">
+                                        <a @click="showNotifications" href="#">
+                                            <i class="fa fa-bell-o" aria-hidden="true"></i>
+                                            <span>@{{notificationsCount}}</span>
+                                        </a>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="user-account-info">
+                                        <div class="user-account-info-controler">
+                                            <div class="user-account-img">
+                                                <img width="30" class="img-responsive" :src="user.photo_url"
+                                                     alt="profile">
+                                            </div>
+                                            <div class="user-account-title">
+                                                <div class="user-account-name">@{{ user.name }}</div>
+                                            </div>
+                                            <div class="user-account-dropdown">
+                                                <i class="fa fa-angle-down" aria-hidden="true"></i>
+                                            </div>
+                                        </div>
+                                        <ul>
+                                            @if (session('spark:impersonator'))
+                                                <h6 class="dropdown-header">{{__('Impersonation')}}</h6>
+
+                                                <a class="dropdown-item"
+                                                   href="/spark/kiosk/users/stop-impersonating">
+                                                    <i class="fa fa-fw text-left fa-btn fa-user-secret"></i> {{__('Back To My Account')}}
+                                                </a>
+
+                                                <div class="dropdown-divider"></div>
+                                            @endif
+
+                                            @if (Spark::developer(Auth::user()->email))
+                                                @include('spark::nav.developer')
+                                            @endif
+
+                                            @include('spark::nav.subscriptions')
+
+                                            <h6 class="dropdown-header">{{__('Settings')}}</h6>
+
+                                            <a class="dropdown-item" href="/settings">
+                                                <i class="fa fa-fw text-left fa-btn fa-cog"></i> {{__('Your Settings')}}
+                                            </a>
+
+                                            <div class="dropdown-divider"></div>
+
+                                            @if (Spark::usesTeams() && (Spark::createsAdditionalTeams() || Spark::showsTeamSwitcher()))
+                                                @include('spark::nav.teams')
+                                            @endif
+
+                                            @if (Spark::hasSupportAddress())
+                                                @include('spark::nav.support')
+                                            @endif
+                                        </ul>
+                                    </div>
+                                </li>
+                                <li><a class="apply-now-btn" href="/logout" id="logout-button">Logout</a></li>
+                            @endif
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="main-menu-area bg-primaryText" id="sticker">
+            <div class="container">
+                <nav id="desktop-nav">
+                    <ul>
+                        <li><a href="/">Home</a></li>
+                        <li class="active"><a href="/home">Dashboard</a></li>
+                    </ul>
+                </nav>
+            </div>
         </div>
     </div>
-</nav>
+    <!-- Mobile Menu Area Start -->
+    <div class="mobile-menu-area">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="mobile-menu">
+                        <nav id="dropdown">
+                            <ul>
+                                <li class="active"><a href="#">Home</a>
+                                    <ul>
+                                        <li><a href="index.html">Home 1</a></li>
+                                        <li><a href="index2.html">Home 2</a></li>
+                                    </ul>
+                                </li>
+                                <li><a href="about.html">About</a></li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Mobile Menu Area End -->
+</header>
