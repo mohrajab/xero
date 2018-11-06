@@ -7,17 +7,15 @@ if (url.searchParams.has("InvoiceID")) {
 }
 
 //prod
-/*
 var newURL = "http://xero-test.tk/invoice/" + id;
-*/
 
 //dev
-var newURL = "http://localhost/xero/public/invoice/" + id;
+// var newURL = "http://localhost:8000/invoice/" + id;
 
 var dropdown = `<dt id="options2">
-        <div id="ext-gen32-2">Arabic PDF<span>&nbsp;</span></div>
+        <div id="ext-gen32-2">Arabic Invoice<span>&nbsp;</span></div>
     </dt>
-    <dd id="ext-gen31-2" style="right: 86px; top: 240px; visibility: hidden; display: block;width: 97px !important;">
+    <dd id="ext-gen31-2" style="right: 86px; top: 240px; visibility: hidden; display: block;width: 116px !important;">
         <ul>
             <li><a target="_blank" href="${newURL}?type=pdf">PDF</a></li>
             <li><a target="_blank" href="${newURL}?type=word">Word</a></li>

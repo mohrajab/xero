@@ -1,13 +1,11 @@
 const CLIENT_ID = '3';
 //prod
-/*
 const CLIENT_SECRET = 'xooutbW09WseDn8JAoniMzzZSXxGuDwuHoZNVyfL';
 const SERVER_URL = "http://xero-test.tk";
-*/
 
 //dev
-const CLIENT_SECRET = 'sOndrYNyZtpkh4TmbGLLqqwJwZHbqc8VNH2kAG9A';
-const SERVER_URL = 'http://localhost/xero/public';
+// const CLIENT_SECRET = 'sOndrYNyZtpkh4TmbGLLqqwJwZHbqc8VNH2kAG9A';
+// const SERVER_URL = 'http://localhost:8000';
 
 const REDIRECT_URL = chrome.identity.getRedirectURL('token');
 const REQUEST_CODE_URL = SERVER_URL + '/redirect' + '?client_id=' + CLIENT_ID + '&redirect_uri=' + REDIRECT_URL;
