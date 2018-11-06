@@ -1,7 +1,15 @@
 const CLIENT_ID = '3';
+//prod
+/*
 const CLIENT_SECRET = 'xooutbW09WseDn8JAoniMzzZSXxGuDwuHoZNVyfL';
-const REDIRECT_URL = chrome.identity.getRedirectURL('token');
 const SERVER_URL = "http://xero-test.tk";
+*/
+
+//dev
+const CLIENT_SECRET = 'sOndrYNyZtpkh4TmbGLLqqwJwZHbqc8VNH2kAG9A';
+const SERVER_URL = 'http://localhost/xero/public';
+
+const REDIRECT_URL = chrome.identity.getRedirectURL('token');
 const REQUEST_CODE_URL = SERVER_URL + '/redirect' + '?client_id=' + CLIENT_ID + '&redirect_uri=' + REDIRECT_URL;
 const REQUEST_TOKEN_URL = SERVER_URL + '/callback' + '?client_id=' + CLIENT_ID + '&client_secret=' + CLIENT_SECRET + '&redirect_uri=' + REDIRECT_URL;
 let TOKEN = undefined;
@@ -70,7 +78,7 @@ function storageSet(object) {
 }
 
 $(document).ready(function () {
-    //  chrome.storage.sync.remove(['auth']);
+     //chrome.storage.sync.remove(['auth']);
     //TOKEN = undefined;
 
     if (!TOKEN) {
@@ -84,7 +92,7 @@ $(document).ready(function () {
     chrome.storage.sync.get('services', function (result) {
         result['services'].forEach(function (item) {
             let service = `<div class="card col-xs-6">
-                <img src="pdf.png" class="img">
+                <img src="${item.image_linked}" class="img">
                 <p class="name-p">${item.name}</p>
                 <p class="points-p">${item.points} pts</p>
             </div>`;

@@ -80,6 +80,8 @@ use Laravel\Spark\User as SparkUser;
  * @property string|null $default_template
  * @property-read \Illuminate\Database\Eloquent\Collection|\Laravel\Passport\Client[] $clients
  * @method static \Illuminate\Database\Eloquent\Builder|\App\User whereDefaultTemplate($value)
+ * @property bool $is_admin
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\User whereIsAdmin($value)
  */
 class User extends SparkUser
 {

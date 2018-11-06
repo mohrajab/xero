@@ -29,7 +29,16 @@
         {
             "matches": [
                 "http://go.xero.com/AccountsReceivable/Edit.aspx?InvoiceID=*",
-                "https://go.xero.com/AccountsReceivable/Edit.aspx?InvoiceID=*"
+                "http://go.xero.com/AccountsReceivable/Edit.aspx?invoiceID=*",
+
+                "https://go.xero.com/AccountsReceivable/Edit.aspx?InvoiceID=*",
+                "https://go.xero.com/AccountsReceivable/Edit.aspx?invoiceID=*",
+
+                "https://go.xero.com/AccountsReceivable/View.aspx?InvoiceID=*",
+                "https://go.xero.com/AccountsReceivable/View.aspx?invoiceID=*",
+
+                "http://go.xero.com/AccountsReceivable/View.aspx?InvoiceID=*",
+                "http://go.xero.com/AccountsReceivable/View.aspx?invoiceID=*"
             ],
             "js": [
                 "contentScript.js"

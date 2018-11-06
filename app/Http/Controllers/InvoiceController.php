@@ -113,6 +113,11 @@ class InvoiceController extends Controller
 
             $filename = "files/" . str_random(20) . '.docx';
             $templateProcessor->saveAs(Storage::path($filename));
+            $PHPWord = \PhpOffice\PhpWord\IOFactory::load(Storage::path($filename));
+            \PhpOffice\PhpWord\Settings::setPdfRendererPath('tcpdf_min');
+            \PhpOffice\PhpWord\Settings::setPdfRendererName('TCPDF');
+            $xmlWriter = \PhpOffice\PhpWord\IOFactory::createWriter($PHPWord , 'PDF');
+            $xmlWriter->save("xxx".'.pdf');
 
             return \Storage::download($filename);
         }catch(\Exception $exception){
