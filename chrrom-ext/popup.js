@@ -48,9 +48,9 @@ function getServices() {
 }
 
 function services() {
-    if (!storageGet('services')) {
+    // if (!storageGet('services')) {
         getServices();
-    }
+    // }
 }
 
 function getToken() {
@@ -70,13 +70,15 @@ function storageSet(object) {
 }
 
 $(document).ready(function () {
-    //  chrome.storage.sync.remove(['auth']);
-    //TOKEN = undefined;
+     // chrome.storage.sync.remove(['auth']);
+    // TOKEN = undefined;
 
     if (!TOKEN) {
         setNonAuthedView();
     } else {
-        setAuthedView();
+        getUser(function () {
+            setAuthedView();
+        });
     }
 
     services();
@@ -143,13 +145,13 @@ function setAuthedView() {
             <div class="col-xs-1">
                 <img src="${user.photo_url}" class="img-circle" style="width: 50px;">
             </div>
-            <div class="col-xs-5 name">
+            <div class="col-xs-6 name">
                <div style="margin-left: 15px;">
                 <label>${user.name}</label>
-                <span><span>${user.current_points}</span>
+                <span><span>${user.current_points}</span> from ${user.current_active}</span>
 </div>
             </div>
-            <div class="col-xs-3"></div>
+            <div class="col-xs-2"></div>
         </div>`);
     });
 }
