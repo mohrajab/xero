@@ -20,8 +20,16 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Service whereUpdatedAt($value)
  * @property string|null $image
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Service whereImage($value)
+ * @property-read mixed $image_linked
  */
 class Service extends Model
 {
     protected $fillable = ["name", "points", "image"];
+
+    protected $appends = ["image_linked"];
+
+    public function getImageLinkedAttribute()
+    {
+        return isset($this->attributes["image"]) && $this->attributes["image"] ? \Storage::url($this->attributes["image"]) : null;
+    }
 }
