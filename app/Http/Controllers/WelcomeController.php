@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Plan;
 use App\Service;
 use App\Tag;
 use Illuminate\Http\Request;
