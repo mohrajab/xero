@@ -92,7 +92,7 @@ $(document).ready(function () {
     chrome.storage.sync.get('services', function (result) {
         result['services'].forEach(function (item) {
             let service = `<div class="card col-xs-6">
-                <img src="${item.image_linked}" class="img">
+                <img src="${SERVER_URL}/storage/${item.image}" class="img">
                 <p class="name-p">${item.name}</p>
                 <p class="points-p">${item.points} pts</p>
             </div>`;
@@ -149,11 +149,13 @@ function setAuthedView() {
         $("#row").html(`<div class="container text-center" style="margin: 20px 0;">
             <div class="col-xs-3"></div>
             <div class="col-xs-1">
+                <a target="_blank" href="http://xero-test.tk/settings">
                 <img src="${user.photo_url}" class="img-circle" style="width: 50px;">
+                </a>
             </div>
             <div class="col-xs-6 name">
                <div style="margin-left: 15px;">
-                <label>${user.name}</label>
+                <a target="_blank" href="http://xero-test.tk/settings"><label>${user.name}</label></a>
                 <span><span>${user.current_points}</span> from ${user.current_active}</span>
 </div>
             </div>

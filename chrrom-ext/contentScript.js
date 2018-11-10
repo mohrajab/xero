@@ -12,13 +12,23 @@ var newURL = "http://xero-test.tk/invoice/" + id;
 //dev
 // var newURL = "http://localhost:8000/invoice/" + id;
 
-var dropdown = `<dt id="options2">
-        <div id="ext-gen32-2">Arabic Invoice<span>&nbsp;</span></div>
+var dropdown = `<dt id="options2" style="color: #2E3544;background: white;">
+        <div style="vertical-align: center" id="ext-gen32-2">
+        <img style="padding-right: 5px" width="25px" src="http://xero-test.tk/theme/img/logo.png"/>
+        <b> Accessories <b style="color: #00D07F"> Cloud</b></b><span>&nbsp;</span>
+        </div>
     </dt>
-    <dd id="ext-gen31-2" style="right: 86px; top: 240px; visibility: hidden; display: block;width: 116px !important;">
+    <dd id="ext-gen31-2" style="visibility: hidden; position: relative; display: block;width: 102% !important;">
         <ul>
-            <li><a target="_blank" href="${newURL}?type=pdf">PDF</a></li>
-            <li><a target="_blank" href="${newURL}?type=word">Word</a></li>
+            <li><a style="vertical-align: center" target="_blank" href="${newURL}?type=pdf">
+            <img style="padding-right: 5px" width="15px" src="http://xero-test.tk/storage/v1fj9DIgG5qtIJ9u9GsEGtT8beZg9roZ0KEUEl9v.png"/>
+          
+            Arabic PDF
+            </a></li>
+            <li><a style="vertical-align: center" target="_blank" href="${newURL}?type=word">
+            <img style="padding-right: 5px" width="15px" src="http://icons.iconarchive.com/icons/dakirby309/simply-styled/128/Microsoft-Word-2013-icon.png"/>
+            Word
+            </a></li>
         </ul>
     </dd>`;
 
