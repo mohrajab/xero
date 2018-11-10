@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>@yield('title', config('app.name'))</title>
+    <base href="{{url("/")}}">
 
     <!-- Favicon -->
     <link rel="shortcut icon" type="image/x-icon" href="theme/img/logo.png">

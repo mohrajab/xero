@@ -89,10 +89,15 @@
                                                 @if (Spark::hasSupportAddress())
                                                     @include('spark::nav.support')
                                                 @endif
+
+
+                                                    <a class="dropdown-item"
+                                                       href="/logout">
+                                                        <i class="fa fa-fw text-left fa-btn fa-sign-out"></i> {{__('Logout')}}
+                                                    </a>
                                             </ul>
                                         </div>
                                     </li>
-                                    <li><a class="apply-now-btn" href="/logout" id="logout-button">Logout</a></li>
                                 @endif
                             </ul>
                         </div>

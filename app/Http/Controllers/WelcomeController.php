@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Service;
+use App\Tag;
 use Illuminate\Http\Request;
 
 class WelcomeController extends Controller
@@ -13,6 +15,14 @@ class WelcomeController extends Controller
      */
     public function show()
     {
-        return view('welcome');
+        $tags = Tag::all();
+        $services = Service::with('tags')->get();
+
+        return view('welcome',compact('services','tags'));
+    }
+
+    public function service(Service $service)
+    {
+        return view('service',compact('service'));
     }
 }

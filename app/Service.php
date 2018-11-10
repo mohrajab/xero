@@ -26,10 +26,25 @@ class Service extends Model
 {
     protected $fillable = ["name", "points", "image"];
 
-    protected $appends = ["image_linked"];
-
-    public function getImageLinkedAttribute()
+    public function tags()
     {
-        return isset($this->attributes["image"]) && $this->attributes["image"] ? \Storage::url($this->attributes["image"]) : null;
+        return $this->belongsToMany(Tag::class);
+    }
+
+    public function getDownloadsAttribute()
+    {
+        return rand(100,1000);
+    }
+
+    public function getTagsClassesAttribute()
+    {
+        return $this->tags->pluck('name')->map(function($name){
+            return strtolower($name);
+        })->implode(" ");
+    }
+
+    public function getTagsListAttribute()
+    {
+        return $this->tags->pluck('name')->implode(" , ");
     }
 }

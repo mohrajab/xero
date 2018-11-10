@@ -1,6 +1,6 @@
 <spark-update-default-template :user="user" inline-template>
     <div class="card card-default" v-if="user">
-        <div class="card-header">{{__('Custom Invoice Template')}}</div>
+        <div class="card-header">{{__('')}}</div>
 
         <div class="card-body">
             <div class="alert alert-danger" v-if="form.errors.has('default_template')">
