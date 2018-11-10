@@ -58,6 +58,9 @@ use Laravel\Spark\Team as SparkTeam;
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Team whereTrialEndsAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Team whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Team whereVatId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Team newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Team newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Team query()
  */
 class Team extends SparkTeam
 {

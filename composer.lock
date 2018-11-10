@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1104df8e1f48cea3ba5b8278ab29c222",
+    "content-hash": "92f4ea02677de5ae4285e77ef0fc49b8",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -214,6 +214,63 @@
             "description": "A client implementation of the Xero API, with a cleaner OAuth interface and ORM-like abstraction.",
             "homepage": "https://github.com/calcinai/xero-php",
             "time": "2018-08-16T01:53:08+00:00"
+        },
+        {
+            "name": "cendekia/nova-setting-tool",
+            "version": "v0.0.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/cendekia/nova-setting-tool.git",
+                "reference": "e735c5fa369f5b746e0b9285320ace4b97d89cb0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/cendekia/nova-setting-tool/zipball/e735c5fa369f5b746e0b9285320ace4b97d89cb0",
+                "reference": "e735c5fa369f5b746e0b9285320ace4b97d89cb0",
+                "shasum": ""
+            },
+            "require": {
+                "doctrine/dbal": "^2.8",
+                "php": ">=7.1.0",
+                "unisharp/laravel-settings": "^2.0"
+            },
+            "require-dev": {
+                "orchestra/testbench": "^3.6",
+                "phpunit/phpunit": "7.1"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Cendekia\\SettingTool\\ToolServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Cendekia\\SettingTool\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Cendekia Pramana Putra",
+                    "email": "me@cendekiapp.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "An app setting manager tool for laravel nova",
+            "homepage": "https://github.com/cendekia/nova-setting-tool",
+            "keywords": [
+                "laravel",
+                "nova",
+                "setting",
+                "tool"
+            ],
+            "time": "2018-10-01T10:51:12+00:00"
         },
         {
             "name": "defuse/php-encryption",
@@ -1154,6 +1211,47 @@
                 "url"
             ],
             "time": "2017-03-20T17:10:46+00:00"
+        },
+        {
+            "name": "inani/laravel-nova-configuration",
+            "version": "1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/akiyamaSM/laravel-nova-configuration.git",
+                "reference": "3db915985a5dcda568fee96617ed5badf38fb1af"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/akiyamaSM/laravel-nova-configuration/zipball/3db915985a5dcda568fee96617ed5badf38fb1af",
+                "reference": "3db915985a5dcda568fee96617ed5badf38fb1af",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.1.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Inani\\LaravelNovaConfiguration\\ToolServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Inani\\LaravelNovaConfiguration\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "A Laravel Nova tool.",
+            "keywords": [
+                "laravel",
+                "nova"
+            ],
+            "time": "2018-10-06T09:44:28+00:00"
         },
         {
             "name": "intervention/image",
@@ -4379,6 +4477,72 @@
             "description": "CssToInlineStyles is a class that enables you to convert HTML-pages/files into HTML-pages/files with inline styles. This is very useful when you're sending emails.",
             "homepage": "https://github.com/tijsverkoyen/CssToInlineStyles",
             "time": "2017-11-27T11:13:29+00:00"
+        },
+        {
+            "name": "unisharp/laravel-settings",
+            "version": "2.0.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/UniSharp/laravel-settings.git",
+                "reference": "e5289be6411d00d9b09f349c469de5ca582e0de9"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/UniSharp/laravel-settings/zipball/e5289be6411d00d9b09f349c469de5ca582e0de9",
+                "reference": "e5289be6411d00d9b09f349c469de5ca582e0de9",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/cache": ">=5.0.0",
+                "illuminate/database": ">=5.0.0",
+                "illuminate/support": ">=5.0.0",
+                "php": ">=5.5.0"
+            },
+            "require-dev": {
+                "codedungeon/phpunit-result-printer": "^0.5.3",
+                "mockery/mockery": "^0.9.9",
+                "phpunit/php-code-coverage": "^5.2",
+                "phpunit/phpunit": "^6.1",
+                "squizlabs/php_codesniffer": "^3.2"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Unisharp\\Setting\\SettingServiceProvider"
+                    ],
+                    "aliases": {
+                        "Setting": "Unisharp\\Setting\\SettingFacade"
+                    }
+                }
+            },
+            "autoload": {
+                "classmap": [
+                    "database"
+                ],
+                "psr-4": {
+                    "Unisharp\\Setting\\": "src/Setting/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "UniSharp Ltd.",
+                    "email": "service@unisharp.com"
+                }
+            ],
+            "description": "Persistent settings manager for laravel, translations are supported.",
+            "keywords": [
+                "Settings",
+                "key-value",
+                "laravel",
+                "persistent",
+                "storage"
+            ],
+            "time": "2018-01-29T09:02:03+00:00"
         },
         {
             "name": "vlucas/phpdotenv",

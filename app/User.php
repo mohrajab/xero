@@ -82,6 +82,9 @@ use Laravel\Spark\User as SparkUser;
  * @method static \Illuminate\Database\Eloquent\Builder|\App\User whereDefaultTemplate($value)
  * @property bool $is_admin
  * @method static \Illuminate\Database\Eloquent\Builder|\App\User whereIsAdmin($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\User newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\User newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\User query()
  */
 class User extends SparkUser
 {

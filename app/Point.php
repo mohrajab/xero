@@ -26,6 +26,9 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Point whereTeamId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Point whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Point whereUserId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Point newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Point newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Point query()
  */
 class Point extends Model
 {

@@ -69,7 +69,10 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
      */
     public function tools()
     {
-        return [];
+        return [
+            new \Cendekia\SettingTool\SettingTool,
+            new \Inani\LaravelNovaConfiguration\LaravelNovaConfiguration()
+        ];
     }
 
     /**
