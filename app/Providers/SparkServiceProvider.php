@@ -65,7 +65,11 @@ class SparkServiceProvider extends ServiceProvider
             return true;
         });
 
-        Plan::loadSpark();
+        try{
+            Plan::loadSpark();
+        }catch (\Exception $exception){
+
+        }
 
 
 //        Spark::plan('Basic', 'plan_DjfmlqQ1K5uGAi')
