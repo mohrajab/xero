@@ -117,8 +117,10 @@ class InvoiceController extends Controller
 
         if (request('type') && request('type') == 'pdf') {
             exec('doc2pdf ' . Storage::path($docxFilename));
+            return \Storage::download($pdfFilename);
         }
-        return \Storage::download($pdfFilename);
+
+        return \Storage::download($docxFilename);
     }
 
     public function upload(UploadTemplateRequest $request)
