@@ -114,12 +114,13 @@ class InvoiceController extends Controller
         $templateProcessor->saveAs(Storage::path($filename));
 
         if (request('type') && request('type') == 'pdf') {
-            $PHPWord = \PhpOffice\PhpWord\IOFactory::load(Storage::path($filename));
-            \PhpOffice\PhpWord\Settings::setPdfRendererPath(base_path("vendor/dompdf/dompdf"));
-            \PhpOffice\PhpWord\Settings::setPdfRendererName('DomPDF');
-            $xmlWriter = \PhpOffice\PhpWord\IOFactory::createWriter($PHPWord, 'PDF');
-            $filename = "files/" . str_random(20) . '.pdf';
-            $xmlWriter->save(Storage::path($filename));
+            exec('doc2pdf '.Storage::path($filename));
+//            $PHPWord = \PhpOffice\PhpWord\IOFactory::load(Storage::path($filename));
+//            \PhpOffice\PhpWord\Settings::setPdfRendererPath(base_path("vendor/dompdf/dompdf"));
+//            \PhpOffice\PhpWord\Settings::setPdfRendererName('DomPDF');
+//            $xmlWriter = \PhpOffice\PhpWord\IOFactory::createWriter($PHPWord, 'PDF');
+//            $filename = "files/" . str_random(20) . '.pdf';
+//            $xmlWriter->save(Storage::path($filename));
         }
         return \Storage::download($filename);
 //        } catch (\Exception $exception) {
