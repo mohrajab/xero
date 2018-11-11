@@ -21,7 +21,7 @@
                 <div class="col-lg-9 col-md-8 col-sm-8 col-xs-12">
                     <div class="inner-page-main-body">
                         <div class="single-banner">
-                            <img src="{{$service->image}}" alt="product" class="img-responsive">
+                            <img src="{{url('storage/'.$service->image)}}" alt="product" class="img-responsive">
                         </div>
                         <h2 class="title-inner-default">{{$service->name}}</h2>
                         <p class="para-inner-default">{{$service->description}}</p>
