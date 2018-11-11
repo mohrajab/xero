@@ -6,6 +6,7 @@ use App\Plan;
 use Laravel\Spark\Spark;
 use Laravel\Spark\Providers\AppServiceProvider as ServiceProvider;
 use Inani\LaravelNovaConfiguration\Helpers\Configuration;
+use Stripe\Stripe;
 
 class SparkServiceProvider extends ServiceProvider
 {
@@ -49,6 +50,7 @@ class SparkServiceProvider extends ServiceProvider
      */
     public function booted()
     {
+        Stripe::setApiKey(env('STRIPE_SECRET'));
         Spark::useStripe()->noCardUpFront()->teamTrialDays(2);
         Spark::useStripe()->noCardUpFront()->trialDays(3);
 

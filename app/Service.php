@@ -35,7 +35,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Service extends Model
 {
-    protected $fillable = ["name", "points", "image"];
+    protected $fillable = ["name", "points", "image","created_at"];
 
     public function tags()
     {

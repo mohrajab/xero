@@ -60,6 +60,5 @@ class Plan extends Model
                 $sparkPlan->yearly();
             }
         }
-
     }
 }

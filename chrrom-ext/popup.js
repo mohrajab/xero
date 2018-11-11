@@ -55,7 +55,7 @@ function getServices() {
 
 function services() {
     // if (!storageGet('services')) {
-        getServices();
+    getServices();
     // }
 }
 
@@ -76,7 +76,7 @@ function storageSet(object) {
 }
 
 $(document).ready(function () {
-     // chrome.storage.sync.remove(['auth']);
+    // chrome.storage.sync.remove(['auth']);
     // TOKEN = undefined;
 
     if (!TOKEN) {
@@ -92,9 +92,11 @@ $(document).ready(function () {
     chrome.storage.sync.get('services', function (result) {
         result['services'].forEach(function (item) {
             let service = `<div class="card col-xs-6">
-                <img src="${SERVER_URL}/storage/${item.image}" class="img">
-                <p class="name-p">${item.name}</p>
-                <p class="points-p">${item.points} pts</p>
+                <a target="_blank" href="${SERVER_URL}/services/${item.id}">
+                    <img src="${SERVER_URL}/storage/${item.image}" class="img">
+                    <p class="name-p">${item.name}</p>
+                    <p class="points-p">${item.points} pts</p>
+                </a>
             </div>`;
 
             $(".cards").append(service)

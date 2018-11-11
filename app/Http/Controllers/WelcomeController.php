@@ -6,6 +6,8 @@ use App\Plan;
 use App\Service;
 use App\Tag;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Stripe\Stripe;
 
 class WelcomeController extends Controller
 {
@@ -16,14 +18,18 @@ class WelcomeController extends Controller
      */
     public function show()
     {
+        Service::update([
+            'created_at' => now()
+        ]);
+
         $tags = Tag::all();
         $services = Service::with('tags')->get();
 
-        return view('welcome',compact('services','tags'));
+        return view('welcome', compact('services', 'tags'));
     }
 
     public function service(Service $service)
     {
-        return view('service',compact('service'));
+        return view('service', compact('service'));
     }
 }

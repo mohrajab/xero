@@ -18,10 +18,12 @@
                             {{ __('Default') }}
                         </a>
                     </div>
-                    <div class="col-md-6 d-flex align-items-center">
+                    <div class="col-md-4 d-flex align-items-center">
                         <a v-if="user.default_template" class="btn btn-success mr-4" :href="fetchLink">
                             {{ __('Download My Custom Template') }}
                         </a>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-center">
                         <div class="spark-uploader mr-4">
                             <input ref="default_template" type="file" class="spark-uploader-control" name="default_template" @change="update" :disabled="form.busy">
                             <div class="btn btn-outline-dark">{{__('Upload Template')}}</div>
