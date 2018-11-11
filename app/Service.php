@@ -32,6 +32,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Service query()
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Service whereCompatibility($value)
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Service whereVersion($value)
+ * @property string|null $product_id
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Service whereProductId($value)
  */
 class Service extends Model
 {

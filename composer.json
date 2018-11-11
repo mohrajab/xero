@@ -23,7 +23,8 @@
     "laravel/tinker": "^1.0",
     "lucacri/spark-impersonate": "^0.0.1",
     "phpoffice/phpword": "^0.15.0",
-    "pulkitjalan/xero-laravel": "dev-master"
+    "pulkitjalan/xero-laravel": "dev-master",
+    "themsaid/nova-cashier-manager": "^0.2.1"
   },
   "require-dev": {
     "barryvdh/laravel-ide-helper": "^2.5",

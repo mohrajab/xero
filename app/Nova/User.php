@@ -17,7 +17,7 @@ class User extends Resource
      *
      * @var string
      */
-    public static $model = 'App\\User';
+    public static $model = \Laravel\Spark\User::class;
 
     /**
      * The single value that should be used to represent the resource when being displayed.
@@ -66,6 +66,8 @@ class User extends Resource
                 ->updateRules('nullable', 'string', 'min:6'),
 
             SparkImpersonate::make($this),
+
+            CashierResourceTool::make()->onlyOnDetail()
         ];
     }
 
