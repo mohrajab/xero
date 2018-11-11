@@ -9,6 +9,7 @@ use Laravel\Nova\Fields\Text;
 use Laravel\Nova\Fields\Gravatar;
 use Laravel\Nova\Fields\Password;
 use Lucacri\SparkImpersonate\SparkImpersonate;
+use Themsaid\CashierTool\CashierResourceTool;
 
 class User extends Resource
 {
