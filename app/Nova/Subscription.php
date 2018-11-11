@@ -50,8 +50,6 @@ class Subscription extends Resource
 
             BelongsTo::make('user'),
 
-//            Text::make('stripe_id'),
-//            Text::make('stripe_plan'),
             Number::make('quantity'),
 
             DateTime::make('Created at'),

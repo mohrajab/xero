@@ -26,7 +26,7 @@
                     <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12 component {{$service->tags_classes}}">
                         <div class="single-item-grid">
                             <div class="item-img">
-                                <img src="{{$service->image}}" alt="product" class="img-responsive">
+                                <img src="/storage/{{$service->image}}" alt="product" class="img-responsive">
                                 <div class="trending-sign" data-tips="Trending"><i class="fa fa-bolt"
                                                                                    aria-hidden="true"></i></div>
                             </div>

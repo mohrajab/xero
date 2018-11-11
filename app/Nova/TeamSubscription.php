@@ -50,8 +50,6 @@ class TeamSubscription extends Resource
 
             BelongsTo::make('team'),
 
-//            Text::make('stripe_id'),
-//            Text::make('stripe_plan'),
             Number::make('quantity'),
 
             DateTime::make('Created at'),
