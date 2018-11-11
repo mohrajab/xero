@@ -44,6 +44,23 @@ class Plan extends Model
         'team_plan' => 'boolean',
     ];
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        self::creating(function ($plan) {
+            $sparkPlan = \Stripe\Plan::create([
+                'currency' => 'usd',
+                'interval' => $plan->interval == "monthly"? 'month' : 'year',
+                'product' => 'prod_DjflmDD4KPX11b',
+                'nickname' => $plan->name,
+                'amount' => $plan->price * 100,
+            ]);
+
+            $plan->plan_id = $sparkPlan->id;
+        });
+    }
+
     public static function loadSpark()
     {
         foreach (self::all() as $plan) {
