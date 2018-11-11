@@ -17,7 +17,7 @@ class Subscription extends Resource
      *
      * @var string
      */
-    public static $model = \Laravel\Spark\Subscription::class;
+    public static $model = 'App\\Subscription';
 
     /**
      * The single value that should be used to represent the resource when being displayed.

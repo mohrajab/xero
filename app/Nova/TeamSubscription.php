@@ -13,7 +13,7 @@ class TeamSubscription extends Resource
      *
      * @var string
      */
-    public static $model = \Laravel\Spark\TeamSubscription::class;
+    public static $model = 'App\\TeamSubscription';
 
     /**
      * The single value that should be used to represent the resource when being displayed.
