@@ -18,9 +18,10 @@ class WelcomeController extends Controller
      */
     public function show()
     {
-        Service::update([
-            'created_at' => now()
-        ]);
+        foreach (Service::all() as $item) {
+            $item->created_at = now();
+            $item->save();
+        }
 
         $tags = Tag::all();
         $services = Service::with('tags')->get();
