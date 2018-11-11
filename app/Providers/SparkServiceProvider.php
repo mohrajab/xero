@@ -81,22 +81,22 @@ class SparkServiceProvider extends ServiceProvider
         }
 
 
-//        Spark::plan('Basic', 'plan_DjfmlqQ1K5uGAi')
-//            ->price(50)
-//            ->features([
-//                '100 point', 'Arabic PDF', 'One month validity'
-//            ])->attributes(["points" => 100]);
+        Spark::plan('Basic', 'plan_DjfmlqQ1K5uGAi')
+            ->price(50)
+            ->features([
+                '100 point', 'Arabic PDF', 'One month validity'
+            ])->attributes(["points" => 100]);
 
-//        Spark::teamPlan('Basic Team', 'plan_Dmnva2WkQH8d4V')
-//            ->price(50)
-//            ->features([
-//                '200 point', 'Arabic PDF', 'One month validity', 'Team usage'
-//            ])->attributes(["points" => 200]);
-//
-//        Spark::plan('Pro', 'plan_DlhQTSTTgUxlLN')
-//            ->price(100)
-//            ->features([
-//                '300 point', 'Arabic PDF', 'One month validity'
-//            ])->attributes(["points" => 300]);
+        Spark::teamPlan('Basic Team', 'plan_Dmnva2WkQH8d4V')
+            ->price(50)
+            ->features([
+                '200 point', 'Arabic PDF', 'One month validity', 'Team usage'
+            ])->attributes(["points" => 200]);
+
+        Spark::plan('Pro', 'plan_DlhQTSTTgUxlLN')
+            ->price(100)
+            ->features([
+                '300 point', 'Arabic PDF', 'One month validity'
+            ])->attributes(["points" => 300]);
     }
 }
