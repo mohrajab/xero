@@ -14,7 +14,7 @@
                             <hr>
                             @if(auth()->user()->subscription())
                                 <p>{{ __('Your used Subscription Points:') }} <span
-                                            style="color:orange">{{ auth()->user()->points()->where('subscription_id', auth()->user()->subscription()->id)->sum('points') }}</span>/{{ (auth()->user()->sparkPlan((auth()->user()->subscription()->name)))->__get('points') }}
+                                            style="color:orange">{{ auth()->user()->points()->where('subscription_id', auth()->user()->subscription()->id)->sum('points') }}</span>/{{ (auth()->user()->sparkPlan((auth()->user()->subscription()->name)))->points }}
                                 </p>
                             @endif
                             @if(auth()->user()->currentTeam())
