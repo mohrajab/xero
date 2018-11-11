@@ -2,6 +2,7 @@
 
 namespace App\Nova;
 
+use Laravel\Nova\Fields\BelongsTo;
 use Laravel\Nova\Fields\DateTime;
 use Laravel\Nova\Fields\ID;
 use Illuminate\Http\Request;
@@ -46,8 +47,9 @@ class Subscription extends Resource
             ID::make()->sortable(),
 
             Text::make('name'),
-            Text::make('stripe_id'),
-            Text::make('stripe_plan'),
+            BelongsTo::make('user'),
+//            Text::make('stripe_id'),
+//            Text::make('stripe_plan'),
             Number::make('quantity'),
             DateTime::make('Trial ends at'),
             DateTime::make('Ends at'),
