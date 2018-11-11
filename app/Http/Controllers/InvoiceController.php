@@ -110,22 +110,15 @@ class InvoiceController extends Controller
             $templateProcessor->setValue("TableEnd:LineItem#{$key}", '');
         }
 
-        $filename = "files/" . str_random(20) . '.docx';
-        $templateProcessor->saveAs(Storage::path($filename));
+        $filename = "files/" . str_random(20);
+        $docxFilename = $filename . '.docx';
+        $pdfFilename = $filename . '.pdf';
+        $templateProcessor->saveAs(Storage::path($docxFilename));
 
         if (request('type') && request('type') == 'pdf') {
-            exec('doc2pdf '.Storage::path($filename));
-//            $PHPWord = \PhpOffice\PhpWord\IOFactory::load(Storage::path($filename));
-//            \PhpOffice\PhpWord\Settings::setPdfRendererPath(base_path("vendor/dompdf/dompdf"));
-//            \PhpOffice\PhpWord\Settings::setPdfRendererName('DomPDF');
-//            $xmlWriter = \PhpOffice\PhpWord\IOFactory::createWriter($PHPWord, 'PDF');
-//            $filename = "files/" . str_random(20) . '.pdf';
-//            $xmlWriter->save(Storage::path($filename));
+            exec('doc2pdf ' . Storage::path($docxFilename));
         }
-        return \Storage::download($filename);
-//        } catch (\Exception $exception) {
-//            return redirect('home');
-//        }
+        return \Storage::download($pdfFilename);
     }
 
     public function upload(UploadTemplateRequest $request)
