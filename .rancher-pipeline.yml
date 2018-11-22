@@ -10,7 +10,7 @@ stages:
         curl --silent --show-error https://getcomposer.org/installer | php
         ./composer.phar install -n --prefer-dist
         cp .env.testing .env
-        php artisan migrate
+#        php artisan migrate
 #        php artisan migrate --env=testing --database=sqlite_testing --force
 #        ./vendor/bin/codecept build
 #        ./vendor/bin/codecept run
