@@ -1,0 +1,32 @@
+postgres:
+  image: 'postgres:latest'
+  environment:
+  - POSTGRES_USER=postgres
+  - POSTGRES_PASSWORD=123123
+
+web:
+  restart: always
+  links:
+  - postgres:postgres
+  environment:
+  - APP_DEBUG=false
+  - DB_HOST=postgres
+  - DB_DATABASE=xero
+  - DB_USERNAME=postgres
+  - DB_PASSWORD=123123
+  - USERMOD="1000 www-data"
+
+web-balancer:
+  restart: always
+  ports:
+  - 443:80
+  - 80:80
+  labels:
+    io.rancher.loadbalancer.ssl.ports: '443'
+    io.rancher.scheduler.affinity:host_label: location=frontend
+    io.rancher.loadbalancer.target.web: abo-rancher.tk
+  tty: true
+  image: rancher/load-balancer-service
+  links:
+  - web:web
+  stdin_open: true
