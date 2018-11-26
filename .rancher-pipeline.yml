@@ -1,8 +1,9 @@
 stages:
-- name: Project test
+- name: Project Preparation
   steps:
   - runScriptConfig:
       image: php:7.2
+#      image: postgres:latest
       shellScript: |-
         apt-get update
         apt-get install -y --no-install-recommends git zip libpng-dev libpq-dev zlib1g-dev
