@@ -7,10 +7,10 @@ stages:
       shellScript: |-
         apt-get update
         apt-get install -y --no-install-recommends git zip libpng-dev libpq-dev zlib1g-dev
-        docker-php-ext-install zip gd bcmath pcntl pdo pdo_pgsql pgsql
+        docker-php-ext-install zip gd bcmath pcntl pdo_pgsql pgsql
         curl --silent --show-error https://getcomposer.org/installer | php
-        ./composer.phar install -n --prefer-dist
         cp .env.testing .env
+        ./composer.phar install -n --prefer-dist
 #        php artisan migrate
 #        php artisan migrate --env=testing --database=sqlite_testing --force
 #        ./vendor/bin/codecept build
