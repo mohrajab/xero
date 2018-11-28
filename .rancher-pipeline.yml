@@ -10,8 +10,8 @@ stages:
         curl --silent --show-error https://getcomposer.org/installer | php
         cp .env.testing .env
         php artisan migrate
-#        php artisan migrate --env=testing --database=sqlite_testing --force
         ./composer.phar install -n --prefer-dist
+#        php artisan migrate --env=testing --database=sqlite_testing --force
 #        ./vendor/bin/codecept build
 #        ./vendor/bin/codecept run
 - name: Publish image
