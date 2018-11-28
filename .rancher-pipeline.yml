@@ -2,8 +2,9 @@ stages:
 - name: Project Preparation
   steps:
   - runScriptConfig:
-      image: php:7.2
-#      image: postgres:latest
+      image:
+        - php:7.2
+        - postgres
       shellScript: |-
         apt-get update
         apt-get install -y --no-install-recommends git zip libpng-dev libpq-dev zlib1g-dev
