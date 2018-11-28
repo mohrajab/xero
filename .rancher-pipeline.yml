@@ -9,9 +9,9 @@ stages:
         docker-php-ext-install zip gd bcmath pcntl pdo_pgsql pgsql
         curl --silent --show-error https://getcomposer.org/installer | php
         cp .env.testing .env
-        php artisan migrate
         ./composer.phar install -n --prefer-dist
-#        php artisan migrate --env=testing --database=sqlite_testing --force
+        php artisan migrate
+      #        php artisan migrate --env=testing --database=sqlite_testing --force
 #        ./vendor/bin/codecept build
 #        ./vendor/bin/codecept run
 - name: Publish image
