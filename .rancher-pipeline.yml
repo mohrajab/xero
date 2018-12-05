@@ -11,6 +11,7 @@ stages:
         cp .env.testing .env
         ./composer.phar install -n --prefer-dist
         php artisan migrate
+        php artisan storage:link
       #        php artisan migrate --env=testing --database=sqlite_testing --force
 #        ./vendor/bin/codecept build
 #        ./vendor/bin/codecept run
