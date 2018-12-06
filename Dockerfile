@@ -4,7 +4,9 @@ RUN apt-get install -y --no-install-recommends git zip libpng-dev libjpeg-dev li
 RUN docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/
 RUN docker-php-ext-install zip gd bcmath pcntl pdo_pgsql pgsql
 RUN curl --silent --show-error https://getcomposer.org/installer | php && chmod +x composer.phar && mv composer.phar /usr/local/bin/composer
+RUN cp .env.testing .env
+RUN composer install -n --prefer-dist
 COPY ./ /app/root/
-CMD bash -c "cd /app/root && cp .env.testing .env && composer install -n --prefer-dist && php artisan storage:link && php -S 0.0.0.0:80 -t /app/root/public"
+CMD bash -c "cd /app/root && php artisan storage:link && php -S 0.0.0.0:80 -t /app/root/public"
 #CMD bash -c "cd /app/root && cp .env.testing .env && composer install -n --prefer-dist && php artisan migrate && php artisan storage:link && php -S 0.0.0.0:80 -t /app/root/public"
 #CMD ["php","-S","0.0.0.0:80","-t","/app/root/public"]
