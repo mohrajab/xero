@@ -1,10 +1,10 @@
 kind: Service
-apiVersion: v1
+apiVersion: v1.1
 metadata:
-  name: xero-service
+  name: xero1-service
 spec:
   selector:
-    app: xero
+    app: xero1
   type: NodePort
   ports:
   - protocol: TCP
@@ -14,18 +14,18 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: xero
+  name: xero1
   labels:
-    app: xero
+    app: xero1
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: xero
+      app: xero1
   template:
     metadata:
       labels:
-        app: xero
+        app: xero1
     spec:
       imagePullSecrets:
       - name: pipeline-docker-registry
