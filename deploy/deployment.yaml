@@ -1,6 +1,5 @@
 kind: Service
 apiVersion: v1
-apiVersion: v1
 metadata:
   name: xero1-service
 spec:
