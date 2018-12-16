@@ -1,4 +1,5 @@
 kind: Service
+apiVersion: v1.1
 apiVersion: v1
 metadata:
   name: xero1-service
@@ -10,27 +11,27 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: 80
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: xero1
-  labels:
-    app: xero1
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
+  ---
+  apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: xero1
+    labels:
       app: xero1
-  template:
-    metadata:
-      labels:
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
         app: xero1
-    spec:
-      imagePullSecrets:
-        - name: pipeline-docker-registry
-      containers:
-        - name: php
+    template:
+      metadata:
+        labels:
+          app: xero1
+      spec:
+        imagePullSecrets:
+          - name: pipeline-docker-registry
+        containers:
+          - name: php
             image: ${CICD_IMAGE}:${CICD_EXECUTION_SEQUENCE}
-          ports:
-            - containerPort: 80
+            ports:
+              - containerPort: 80

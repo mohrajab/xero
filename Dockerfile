@@ -8,4 +8,4 @@ COPY site.conf /etc/nginx/sites-enabled/default.conf
 WORKDIR /my-app
 COPY . /my-app
 RUN cd /my-app && cp .env.testing .env
-RUN composer install
+#RUN composer install
