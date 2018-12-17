@@ -5,7 +5,9 @@ RUN set -ex && apk --no-cache add postgresql-dev
 RUN docker-php-ext-install bcmath pcntl pdo_pgsql pgsql
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 COPY site.conf /etc/nginx/sites-enabled/default.conf
-WORKDIR /my-app
-COPY . /my-app
-RUN cd /my-app && cp .env.testing .env
-#RUN composer install
+WORKDIR /var/www
+ADD . /var/www
+RUN cd /var/www && cp .env.testing .env
+RUN composer install
+RUN chown -R www-data:www-data /var/www
+RUN chmod -R 777 /var/www/storage
