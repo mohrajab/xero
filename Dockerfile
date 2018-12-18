@@ -10,5 +10,6 @@ ADD . /var/www
 RUN cd /var/www && cp .env.testing .env
 RUN composer install
 RUN php artisan migrate:fresh --seed
+RUN php artisan storage:link
 RUN chown -R www-data:www-data /var/www
 RUN chmod -R 777 /var/www/storage
