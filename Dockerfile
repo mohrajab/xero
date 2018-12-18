@@ -7,8 +7,9 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 COPY site.conf /etc/nginx/sites-enabled/default.conf
 WORKDIR /var/www
 ADD . /var/www
-RUN cd /var/www && cp .env.testing .env && cp /var/www/storage /var/www/storage-alter
+RUN cd /var/www && cp .env.testing .env
 RUN composer install
 RUN php artisan migrate:fresh --seed
 RUN chown -R www-data:www-data /var/www
 RUN chmod -R 777 /var/www/storage
+COPY /var/www/storage /var/www/storage-alter
