@@ -8,6 +8,7 @@ COPY site.conf /etc/nginx/sites-enabled/default.conf
 WORKDIR /var/www
 ADD . /var/www
 RUN cd /var/www && cp .env.testing .env
+COPY /var/www/storage /var/www/storage-alter
 RUN composer install
 RUN php artisan migrate:fresh --seed
 RUN chown -R www-data:www-data /var/www
