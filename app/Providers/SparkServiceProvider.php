@@ -5,7 +5,7 @@ namespace App\Providers;
 use App\Plan;
 use Laravel\Spark\Spark;
 use Laravel\Spark\Providers\AppServiceProvider as ServiceProvider;
-//use Inani\LaravelNovaConfiguration\Helpers\Configuration;
+use Inani\LaravelNovaConfiguration\Helpers\Configuration;
 use Stripe\Stripe;
 
 class SparkServiceProvider extends ServiceProvider
@@ -66,13 +66,13 @@ class SparkServiceProvider extends ServiceProvider
 
         try{
 
-            /*Spark::details([
+            Spark::details([
                 'vendor' => Configuration::get('SPARK_VENDOR'),
                 'product' => Configuration::get('SPARK_PRODUCT'),
                 'street' => Configuration::get('SPARK_STREET'),
                 'location' => Configuration::get('SPARK_LOCATION'),
                 'phone' => Configuration::get('SPARK_PHONE'),
-            ]);*/
+            ]);
 
             Plan::loadSpark();
 
