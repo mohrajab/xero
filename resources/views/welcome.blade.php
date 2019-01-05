@@ -5,7 +5,7 @@
         <div class="container">
             <div class="main-banner2-wrapper">
                 <h1>Your Cloud Accessories!</h1>
-                <p>Customize your service</p>
+                <p>Customize your own service</p>
             </div>
         </div>
     </div>
